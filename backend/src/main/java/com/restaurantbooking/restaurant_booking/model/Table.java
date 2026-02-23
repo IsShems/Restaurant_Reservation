@@ -4,6 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * JPA entity representing a restaurant table.
@@ -18,14 +26,28 @@ public class Table {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Name/identifier for the table (e.g., "Table 1", "Corner Booth 5")
+    private String name;
+
     // Number of seats at the table
     private int capacity;
 
-    // Zone of the restaurant (e.g., "patio", "main", "balcony")
-    private String zone;
+    // Zone relationship - each table belongs to a zone
+    @ManyToOne
+    @JoinColumn(name = "zone_id", nullable = false)
+    private Zone zone;
 
-    // Whether the table is next to a window
-    private boolean hasWindow;
+    // X position on the restaurant floor plan
+    private Integer positionX;
+
+    // Y position on the restaurant floor plan
+    private Integer positionY;
+
+    // Features this table has (ElementCollection with enum values)
+    @ElementCollection
+    @CollectionTable(name = "table_features", joinColumns = @JoinColumn(name = "table_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<Feature> features = new HashSet<>();
 
     // Whether the table is currently occupied / reserved
     private boolean occupied;
@@ -34,11 +56,13 @@ public class Table {
     public Table() {
     }
 
-    // Convenience constructor for seeding and tests (id is omitted)
-    public Table(int capacity, String zone, boolean window, boolean occupied) {
+    // Constructor for seeding basic table data
+    public Table(String name, int capacity, Zone zone, Integer positionX, Integer positionY, boolean occupied) {
+        this.name = name;
         this.capacity = capacity;
         this.zone = zone;
-        this.hasWindow = window;
+        this.positionX = positionX;
+        this.positionY = positionY;
         this.occupied = occupied;
     }
 
@@ -51,6 +75,14 @@ public class Table {
         this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public int getCapacity() {
         return capacity;
     }
@@ -59,20 +91,36 @@ public class Table {
         this.capacity = capacity;
     }
 
-    public String getZone() {
+    public Zone getZone() {
         return zone;
     }
 
-    public void setZone(String zone) {
+    public void setZone(Zone zone) {
         this.zone = zone;
     }
 
-    public boolean isWindow() {
-        return hasWindow;
+    public Integer getPositionX() {
+        return positionX;
     }
 
-    public void setWindow(boolean window) {
-        this.hasWindow = window;
+    public void setPositionX(Integer positionX) {
+        this.positionX = positionX;
+    }
+
+    public Integer getPositionY() {
+        return positionY;
+    }
+
+    public void setPositionY(Integer positionY) {
+        this.positionY = positionY;
+    }
+
+    public Set<Feature> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(Set<Feature> features) {
+        this.features = features;
     }
 
     public boolean isOccupied() {
