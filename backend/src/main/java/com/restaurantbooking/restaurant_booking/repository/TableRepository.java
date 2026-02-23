@@ -19,7 +19,17 @@ public interface TableRepository extends JpaRepository<Table, Long> {
     List<Table> findByOccupiedFalse();
 
     /**
-     * Find available tables filtered by zone.
+     * Find available tables filtered by zone ID.
      */
-    List<Table> findByZoneAndOccupiedFalse(String zone);
+    List<Table> findByZoneIdAndOccupiedFalse(Long zoneId);
+
+    /**
+     * Find all tables in a specific zone.
+     */
+    List<Table> findByZoneId(Long zoneId);
+
+    /**
+     * Find tables by zone name.
+     */
+    List<Table> findByZoneName(String zoneName);
 }
