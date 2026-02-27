@@ -16,10 +16,10 @@ export interface FilterState {
   preferences: string[];
 }
 
-const zones = ["Main Hall", "Patio", "Balcony", "Private Room"];
+const zones = ["Main Hall", "Patio", "Teracce", "Private Room"];
 const preferenceOptions = [
   { id: "window", label: "Near Window", icon: "🪟" },
-  { id: "private", label: "Private Corner", icon: "🔒" },
+  { id: "private", label: "Quiet Corner", icon: "🔒" },
   { id: "kids", label: "Near Kids Zone", icon: "👶" },
 ];
 
