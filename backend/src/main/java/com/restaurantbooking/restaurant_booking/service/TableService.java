@@ -51,7 +51,8 @@ public class TableService {
 
     /**
      * Get available tables with time-based filtering.
-     * Filters by: capacity, zone, time availability, and guest count.
+     * Filters by: zone and time availability.
+     * Capacity suitability is handled at recommendation/selection stage, not availability.
      */
     public List<Table> getAvailableTables(LocalDateTime startTime, LocalDateTime endTime,
                                          Integer guestCount, String zoneName, 
@@ -59,7 +60,6 @@ public class TableService {
         List<Table> allTables = tableRepository.findAll();
 
         return allTables.stream()
-            .filter(table -> table.getCapacity() >= guestCount) // Match capacity
             .filter(table -> zoneName == null || zoneName.isBlank() || 
                            (table.getZone() != null && 
                             table.getZone().getName().equalsIgnoreCase(zoneName))) // Match zone
