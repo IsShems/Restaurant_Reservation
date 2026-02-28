@@ -16,7 +16,7 @@ export interface FilterState {
   preferences: string[];
 }
 
-const zones = ["Main Hall", "Patio", "Teracce", "Private Room"];
+const zones = ["Main Hall", "Patio", "Terrace", "Private Room"];
 const preferenceOptions = [
   { id: "window", label: "Near Window", icon: "🪟" },
   { id: "private", label: "Quiet Corner", icon: "🔒" },
@@ -49,11 +49,29 @@ export default function FilterForm({ onFilter, isLoading }: FilterFormProps) {
   };
 
   const handlePreferenceToggle = (pref: string) => {
+    const alreadySelected = filters.preferences.includes(pref);
+
+    if (alreadySelected) {
+      setFilters({
+        ...filters,
+        preferences: filters.preferences.filter((p) => p !== pref),
+      });
+      return;
+    }
+
+    let nextPrefs = [...filters.preferences, pref];
+
+    if (pref === "private") {
+      nextPrefs = nextPrefs.filter((p) => p !== "kids");
+    }
+
+    if (pref === "kids") {
+      nextPrefs = nextPrefs.filter((p) => p !== "private");
+    }
+
     setFilters({
       ...filters,
-      preferences: filters.preferences.includes(pref)
-        ? filters.preferences.filter((p) => p !== pref)
-        : [...filters.preferences, pref],
+      preferences: nextPrefs,
     });
   };
 

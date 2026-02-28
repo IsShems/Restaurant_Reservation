@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import type { FilterState } from "./components/FilterForm";
@@ -22,21 +22,160 @@ interface Table {
   occupied: boolean;
   positionX: number;
   positionY: number;
+  uiDimmed?: boolean;
 }
 
+type TableRule = {
+  zone: "main_hall" | "patio" | "terrace" | "private_room";
+  nearWindow: boolean;
+  quietCorner: boolean;
+  nearKidsZone: boolean;
+};
+
+const TABLE_RULES: Record<number, TableRule> = {
+  1: {
+    zone: "main_hall",
+    nearWindow: true,
+    quietCorner: false,
+    nearKidsZone: false,
+  },
+  2: {
+    zone: "main_hall",
+    nearWindow: true,
+    quietCorner: false,
+    nearKidsZone: false,
+  },
+  3: {
+    zone: "main_hall",
+    nearWindow: false,
+    quietCorner: false,
+    nearKidsZone: false,
+  },
+  4: {
+    zone: "private_room",
+    nearWindow: true,
+    quietCorner: true,
+    nearKidsZone: false,
+  },
+  5: {
+    zone: "patio",
+    nearWindow: true,
+    quietCorner: false,
+    nearKidsZone: true,
+  },
+  6: {
+    zone: "patio",
+    nearWindow: true,
+    quietCorner: true,
+    nearKidsZone: true,
+  },
+  7: {
+    zone: "patio",
+    nearWindow: false,
+    quietCorner: true,
+    nearKidsZone: true,
+  },
+  8: {
+    zone: "terrace",
+    nearWindow: false,
+    quietCorner: false,
+    nearKidsZone: false,
+  },
+  9: {
+    zone: "terrace",
+    nearWindow: false,
+    quietCorner: false,
+    nearKidsZone: false,
+  },
+  10: {
+    zone: "terrace",
+    nearWindow: true,
+    quietCorner: false,
+    nearKidsZone: false,
+  },
+};
+
+const getTableNumber = (table: Table): number | null => {
+  const idNum = Number(table.id);
+  if (Number.isFinite(idNum) && idNum >= 1 && idNum <= 10) return idNum;
+  const match = String(table.name || "").match(/table\s*(\d+)/i);
+  return match ? Number(match[1]) : null;
+};
+
+const normalizeZone = (zoneValue: string) => {
+  const value = (zoneValue || "").toLowerCase().replace(/\s+/g, "_");
+  if (!value) return "";
+  if (
+    value.includes("terr") ||
+    value.includes("balcony") ||
+    value.includes("teracce")
+  )
+    return "terrace";
+  if (value.includes("private")) return "private_room";
+  if (value.includes("kids")) return "kids_zone";
+  if (value.includes("patio")) return "patio";
+  if (value.includes("main")) return "main_hall";
+  return value;
+};
+
+const matchesPreference = (table: Table, preference: string) => {
+  const tableNumber = getTableNumber(table);
+  const rule = tableNumber ? TABLE_RULES[tableNumber] : undefined;
+  const features = (table.features || []).join(" ").toLowerCase();
+  if (preference === "window")
+    return rule ? rule.nearWindow : /window/.test(features);
+  if (preference === "private")
+    return rule ? rule.quietCorner : /private|quiet/.test(features);
+  if (preference === "kids")
+    return rule ? rule.nearKidsZone : /kids/.test(features);
+  return false;
+};
+
 export default function Home() {
+  const [allTables, setAllTables] = useState<Table[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedTableId, setRecommendedTableId] = useState<number | null>(
     null,
   );
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [recommendedGroupIds, setRecommendedGroupIds] = useState<
+    Array<number | string>
+  >([]);
+  const [selectedTableIds, setSelectedTableIds] = useState<
+    Array<number | string>
+  >([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [noPerfectMatch, setNoPerfectMatch] = useState(false);
   const [toasts, setToasts] = useState<ToastType[]>([]);
   const [currentFilters, setCurrentFilters] = useState<FilterState | null>(
     null,
   );
   const [isReserving, setIsReserving] = useState(false);
+
+  const adjacencyMap: Record<number, number[]> = {
+    1: [2, 3],
+    2: [1, 3],
+    3: [1, 2],
+    4: [],
+    5: [6, 7],
+    6: [5, 7],
+    7: [5, 6],
+    8: [9, 10],
+    9: [8, 10],
+    10: [8, 9],
+  };
+
+  const toTableNum = (value: number | string) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  };
+
+  const isAdjacent = (a: number | string, b: number | string) => {
+    const aNum = toTableNum(a);
+    const bNum = toTableNum(b);
+    if (aNum === null || bNum === null) return false;
+    return (adjacencyMap[aNum] || []).includes(bNum);
+  };
 
   const addToast = (type: "success" | "error" | "info", message: string) => {
     const id = Date.now().toString();
@@ -47,91 +186,350 @@ export default function Home() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const fetchAvailableTables = useCallback(async (filters: FilterState) => {
-    setIsLoading(true);
-    setSelectedTableId(null);
-
+  const fetchAllTables = useCallback(async () => {
     try {
-      // Calculate end time (1 hour after start time)
-      const [hours] = filters.time.split(":");
-      const endHour = (parseInt(hours) + 1) % 24;
-      const endTime = `${endHour.toString().padStart(2, "0")}:00`;
-
-      // Build query string
-      const params = new URLSearchParams({
-        date: filters.date,
-        startTime: filters.time,
-        endTime: endTime,
-        guestCount: filters.guests.toString(),
-      });
-
-      if (filters.zone && filters.zone !== "all") {
-        params.append("zone", filters.zone);
-      }
-
-      if (filters.preferences && filters.preferences.length > 0) {
-        const prefMap: Record<string, string> = {
-          window: "NEAR_WINDOW",
-          private: "PRIVATE_CORNER",
-          kids: "NEAR_KIDS_ZONE",
-        };
-        const mappedPrefs = filters.preferences
-          .map((p) => prefMap[p])
-          .filter(Boolean)
-          .join(",");
-        if (mappedPrefs) {
-          params.append("preferences", mappedPrefs);
-        }
-      }
-
-      const response = await fetch(
-        `http://localhost:8081/api/search?${params.toString()}`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch available tables");
-      }
-
+      const response = await fetch("http://localhost:8081/tables");
+      if (!response.ok) throw new Error("Failed to load floor plan tables");
       const data = await response.json();
-
-      setTables(data.availableTables || []);
-      setRecommendedTableId(data.recommendedTableId || null);
-      setHasSearched(true);
-      setCurrentFilters(filters);
-
-      if (data.availableTables?.length === 0) {
-        addToast("info", "No tables available for your selection");
-      } else {
-        addToast(
-          "success",
-          `Found ${data.availableTables.length} available tables`,
+      const list = Array.isArray(data) ? data : [];
+      const normalizedList: Table[] = list
+        .filter((table) => getTableNumber(table as Table) !== null)
+        .map((table) => {
+          const tableNum = getTableNumber(table as Table);
+          const rule = tableNum ? TABLE_RULES[tableNum] : undefined;
+          const featureSet = new Set(
+            (table.features || []).map((f: string) => String(f).toUpperCase()),
+          );
+          if (rule?.nearWindow) featureSet.add("WINDOW");
+          if (rule?.quietCorner) featureSet.add("PRIVATE_AREA");
+          if (rule?.nearKidsZone) featureSet.add("KIDS_ZONE");
+          return {
+            ...table,
+            features: Array.from(featureSet),
+          } as Table;
+        });
+      setAllTables(normalizedList);
+      if (!hasSearched) {
+        setTables(
+          normalizedList.map((t) => ({
+            ...t,
+            occupied: !!t.occupied,
+            uiDimmed: false,
+          })),
         );
       }
-    } catch (err) {
-      addToast(
-        "error",
-        err instanceof Error ? err.message : "Failed to fetch tables",
-      );
-      setTables([]);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      addToast("error", "Unable to load floor plan tables");
     }
-  }, []);
+  }, [hasSearched]);
+
+  useEffect(() => {
+    fetchAllTables();
+  }, [fetchAllTables]);
+
+  const fetchAvailableTables = useCallback(
+    async (filters: FilterState) => {
+      setIsLoading(true);
+
+      try {
+        // Calculate end time (1 hour after start time)
+        const [hours] = filters.time.split(":");
+        const endHour = (parseInt(hours) + 1) % 24;
+        const endTime = `${endHour.toString().padStart(2, "0")}:00`;
+
+        // Build query string
+        const params = new URLSearchParams({
+          date: filters.date,
+          startTime: filters.time,
+          endTime: endTime,
+          guestCount: filters.guests.toString(),
+        });
+
+        const response = await fetch(
+          `http://localhost:8081/api/search?${params.toString()}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch available tables");
+        }
+
+        const data = await response.json();
+
+        const availableIds = new Set<string>(
+          (data.availableTables || []).map((table: Table) => String(table.id)),
+        );
+
+        const baseTables = allTables.length ? allTables : tables;
+        const zoneFilter = normalizeZone(filters.zone);
+
+        const availableTables = baseTables.filter((t) =>
+          availableIds.has(String(t.id)),
+        );
+
+        const zoneMatches = (table: Table) => {
+          if (!zoneFilter) return true;
+          const tableNum = getTableNumber(table);
+          const ruleZone = tableNum ? TABLE_RULES[tableNum]?.zone : undefined;
+          const logicalZone = ruleZone || normalizeZone(table.zone?.name || "");
+          if (zoneFilter === "kids_zone") {
+            return tableNum === 5 || tableNum === 6 || tableNum === 7;
+          }
+          return logicalZone === zoneFilter;
+        };
+
+        const capacityMatches = (table: Table) =>
+          table.capacity >= filters.guests;
+
+        const preferenceScore = (table: Table) =>
+          (filters.preferences || []).reduce(
+            (score, pref) => score + (matchesPreference(table, pref) ? 1 : 0),
+            0,
+          );
+
+        const preferenceMatchesAll = (table: Table) =>
+          (filters.preferences || []).every((pref) =>
+            matchesPreference(table, pref),
+          );
+
+        const baseMatchedTables = availableTables.filter(
+          (t) => zoneMatches(t) && capacityMatches(t),
+        );
+
+        const preferenceMatchedTables =
+          (filters.preferences || []).length > 0
+            ? baseMatchedTables.filter(preferenceMatchesAll)
+            : baseMatchedTables;
+
+        const candidates = preferenceMatchedTables;
+
+        const rankedSingles = [...candidates].sort((a, b) => {
+          const wasteA = a.capacity - filters.guests;
+          const wasteB = b.capacity - filters.guests;
+          if (wasteA !== wasteB) return wasteA - wasteB;
+          return preferenceScore(b) - preferenceScore(a);
+        });
+
+        const logicalZoneOf = (table: Table) => {
+          const tableNum = getTableNumber(table);
+          const ruleZone = tableNum ? TABLE_RULES[tableNum]?.zone : undefined;
+          return ruleZone || normalizeZone(table.zone?.name || "");
+        };
+
+        const inSameZone = (a: Table, b: Table) =>
+          logicalZoneOf(a) === logicalZoneOf(b);
+
+        const adjacent = (a: Table, b: Table) => {
+          const idA = Number(a.id);
+          const idB = Number(b.id);
+          const idNear =
+            Number.isFinite(idA) &&
+            Number.isFinite(idB) &&
+            Math.abs(idA - idB) === 1;
+          const dx = (a.positionX || 0) - (b.positionX || 0);
+          const dy = (a.positionY || 0) - (b.positionY || 0);
+          const distNear = Math.hypot(dx, dy) <= 140;
+          return inSameZone(a, b) && (idNear || distNear);
+        };
+
+        const findRecommendedGroup = (): Table[] | null => {
+          const pool = availableTables.filter((t) => zoneMatches(t));
+          let best: Table[] | null = null;
+
+          const trySet = (group: Table[]) => {
+            const capacity = group.reduce((sum, t) => sum + t.capacity, 0);
+            if (capacity < filters.guests) return;
+            const waste = capacity - filters.guests;
+            const score = group.reduce((sum, t) => sum + preferenceScore(t), 0);
+
+            if (!best) {
+              best = group;
+              return;
+            }
+
+            const bestCapacity = best.reduce((sum, t) => sum + t.capacity, 0);
+            const bestWaste = bestCapacity - filters.guests;
+            const bestScore = best.reduce(
+              (sum, t) => sum + preferenceScore(t),
+              0,
+            );
+
+            if (waste < bestWaste) {
+              best = group;
+              return;
+            }
+            if (waste === bestWaste && group.length < best.length) {
+              best = group;
+              return;
+            }
+            if (
+              waste === bestWaste &&
+              group.length === best.length &&
+              score > bestScore
+            ) {
+              best = group;
+            }
+          };
+
+          for (let i = 0; i < pool.length; i++) {
+            for (let j = i + 1; j < pool.length; j++) {
+              if (!adjacent(pool[i], pool[j])) continue;
+              trySet([pool[i], pool[j]]);
+
+              for (let k = j + 1; k < pool.length; k++) {
+                if (!adjacent(pool[j], pool[k]) && !adjacent(pool[i], pool[k]))
+                  continue;
+                trySet([pool[i], pool[j], pool[k]]);
+              }
+            }
+          }
+
+          return best;
+        };
+
+        const maxSingleCapacity =
+          candidates.length > 0
+            ? Math.max(...candidates.map((t) => t.capacity))
+            : 0;
+        const needsGroup =
+          filters.guests > maxSingleCapacity || rankedSingles.length === 0;
+
+        const group: Table[] | null = needsGroup
+          ? findRecommendedGroup()
+          : null;
+        const groupIds: Array<number | string> = group
+          ? group.map((table: Table) => table.id)
+          : [];
+
+        const recommendedId =
+          groupIds.length > 0
+            ? Number(groupIds[0]) || null
+            : rankedSingles.length > 0
+              ? Number(rankedSingles[0].id) || null
+              : null;
+
+        const derivedTables = baseTables.map((table) => {
+          const isAvailable = availableIds.has(String(table.id));
+          const isInZone = zoneMatches(table);
+          const dimForZone = !!zoneFilter && !isInZone;
+          return {
+            ...table,
+            occupied: !isAvailable,
+            uiDimmed: dimForZone,
+          };
+        });
+
+        const matchedIds = new Set<string>(
+          (candidates.length > 0 ? candidates : group || []).map((table) =>
+            String(table.id),
+          ),
+        );
+
+        if (filters.guests >= 5 && filters.guests <= 6) {
+          for (const table of baseTables) {
+            const tableNum = getTableNumber(table);
+            if (
+              (tableNum === 8 || tableNum === 9 || tableNum === 10) &&
+              availableIds.has(String(table.id))
+            ) {
+              matchedIds.add(String(table.id));
+            }
+          }
+        }
+
+        const noMatch = matchedIds.size === 0;
+
+        setTables(
+          derivedTables.map((table) => {
+            const shouldDimByMatch = !matchedIds.has(String(table.id));
+            const shouldDim = noMatch
+              ? true
+              : table.uiDimmed || shouldDimByMatch;
+            return { ...table, uiDimmed: shouldDim };
+          }),
+        );
+        setNoPerfectMatch(noMatch);
+        setRecommendedTableId(recommendedId);
+        setRecommendedGroupIds(groupIds);
+        setHasSearched(true);
+        setCurrentFilters(filters);
+
+        if (noMatch) {
+          addToast("info", "No perfect match found");
+        } else if (groupIds.length > 0) {
+          addToast(
+            "success",
+            `Recommended grouped tables: ${groupIds.join(" + ")}`,
+          );
+        } else {
+          addToast(
+            "success",
+            `Found ${availableTables.length} available tables`,
+          );
+        }
+      } catch (err) {
+        addToast(
+          "error",
+          err instanceof Error ? err.message : "Failed to fetch tables",
+        );
+        setNoPerfectMatch(true);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [allTables, tables],
+  );
 
   const handleTableSelect = (table: Table) => {
-    setSelectedTableId(table.id as number);
-    addToast("info", `Selected ${table.name}`);
+    setSelectedTableIds((prev) => {
+      const alreadySelected = prev.includes(table.id);
+
+      if (alreadySelected) {
+        const next = prev.filter((id) => id !== table.id);
+        addToast(
+          "info",
+          next.length ? `Deselected ${table.name}` : "Selection cleared",
+        );
+        return next;
+      }
+
+      if (prev.length === 0) {
+        addToast("info", `Selected ${table.name}`);
+        return [table.id];
+      }
+
+      const canAdd = prev.every((selectedId) =>
+        isAdjacent(selectedId, table.id),
+      );
+
+      if (canAdd) {
+        addToast("info", `Added ${table.name} to selection`);
+        return [...prev, table.id];
+      }
+
+      addToast("info", `Selected ${table.name}`);
+      return [table.id];
+    });
   };
 
   const handleReserve = async () => {
-    if (!selectedTableId || !currentFilters) {
+    if (selectedTableIds.length === 0 || !currentFilters) {
       addToast("error", "Please select a table first");
       return;
     }
 
-    const selectedTable = tables.find((t) => t.id === selectedTableId);
-    if (!selectedTable) {
+    const selectedTables = tables.filter((t) =>
+      selectedTableIds.includes(t.id),
+    );
+    if (selectedTables.length === 0) {
       addToast("error", "Selected table not found");
+      return;
+    }
+
+    if (currentFilters.guests <= 2 && selectedTables.length > 1) {
+      addToast(
+        "error",
+        "For 2 guests, please select one suitable table only. Multiple-table reservation is not allowed.",
+      );
       return;
     }
 
@@ -142,37 +540,37 @@ export default function Home() {
       const endHour = (parseInt(hours) + 1) % 24;
       const endTime = `${endHour.toString().padStart(2, "0")}:00`;
 
-      const reservationData = {
-        table: selectedTable,
-        date: currentFilters.date,
-        startTime: currentFilters.time,
-        endTime: endTime,
-        guestCount: currentFilters.guests,
-      };
+      for (const selectedTable of selectedTables) {
+        const reservationData = {
+          table: selectedTable,
+          date: currentFilters.date,
+          startTime: currentFilters.time,
+          endTime: endTime,
+          guestCount: currentFilters.guests,
+        };
 
-      const response = await fetch("http://localhost:8081/api/reservations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reservationData),
-      });
+        const response = await fetch("http://localhost:8081/api/reservations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(reservationData),
+        });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create reservation");
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to create reservation");
+        }
       }
 
-      const result = await response.json();
-
-      if (result.success) {
-        addToast("success", `Reservation confirmed for ${selectedTable.name}!`);
-        // Refresh available tables
-        fetchAvailableTables(currentFilters);
-        setSelectedTableId(null);
-      } else {
-        addToast("error", result.error || "Failed to create reservation");
-      }
+      addToast(
+        "success",
+        `Reservation confirmed for ${selectedTables
+          .map((table) => table.name)
+          .join(", ")}!`,
+      );
+      fetchAvailableTables(currentFilters);
+      setSelectedTableIds([]);
     } catch (err) {
       addToast(
         "error",
@@ -228,50 +626,42 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-4"
         >
-          {hasSearched ? (
-            <>
-              <FloorPlan
-                tables={tables}
-                recommendedTableId={recommendedTableId}
-                selectedTableId={selectedTableId}
-                onTableClick={handleTableSelect}
-                isLoading={isLoading}
-              />
-
-              {/* Legend */}
-              <Legend />
-
-              {/* Reserve Button */}
-              {selectedTableId && !isLoading && (
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onClick={handleReserve}
-                  disabled={isReserving}
-                  className="w-full py-3 rounded-lg font-semibold text-white transition-all
-                      bg-gradient-to-r from-purple-accent to-purple-dark hover:from-purple-dark hover:to-purple-accent
-                      active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isReserving
-                    ? "Reserving..."
-                    : `Reserve Table ${selectedTableId}`}
-                </motion.button>
-              )}
-            </>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center justify-center h-96 rounded-lg border border-dark-border bg-dark-card/30"
-            >
-              <div className="text-center">
-                <p className="text-2xl mb-2">🔍</p>
-                <p className="text-gray-400">
-                  Use the filter form to search for available tables
-                </p>
+          <>
+            {noPerfectMatch && (
+              <div className="text-sm text-gray-300">
+                No perfect match found
               </div>
-            </motion.div>
-          )}
+            )}
+
+            <FloorPlan
+              tables={tables.length ? tables : allTables}
+              recommendedTableId={recommendedTableId}
+              recommendedGroupIds={recommendedGroupIds}
+              selectedTableIds={selectedTableIds}
+              onTableClick={handleTableSelect}
+              isLoading={isLoading}
+            />
+
+            {/* Legend */}
+            <Legend />
+
+            {/* Reserve Button */}
+            {selectedTableIds.length > 0 && !isLoading && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={handleReserve}
+                disabled={isReserving}
+                className="w-full py-3 rounded-lg font-semibold text-white transition-all
+                    bg-gradient-to-r from-purple-accent to-purple-dark hover:from-purple-dark hover:to-purple-accent
+                    active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isReserving
+                  ? "Reserving..."
+                  : `Reserve Table${selectedTableIds.length > 1 ? "s" : ""} ${selectedTableIds.join(" + ")}`}
+              </motion.button>
+            )}
+          </>
         </motion.div>
       </div>
 

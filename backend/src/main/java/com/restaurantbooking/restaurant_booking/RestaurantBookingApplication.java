@@ -31,91 +31,103 @@ public class RestaurantBookingApplication {
 	@Bean
 	public CommandLineRunner seedData(ZoneRepository zoneRepository, TableRepository tableRepository) {
 		return args -> {
-			// Create zones
-			Zone mainZone = zoneRepository.save(new Zone("main"));
-			Zone patioZone = zoneRepository.save(new Zone("patio"));
-			Zone balconyZone = zoneRepository.save(new Zone("balcony"));
-			Zone privateZone = zoneRepository.save(new Zone("private_room"));
+			tableRepository.deleteAll();
+			zoneRepository.deleteAll();
 
-			// Add tables to zones with positions and features
-			// Main Hall tables
+			// Create zones
+			Zone mainZone = zoneRepository.save(new Zone("MAIN_HALL"));
+			Zone patioZone = zoneRepository.save(new Zone("PATIO"));
+			Zone balconyZone = zoneRepository.save(new Zone("TERRACE"));
+			Zone privateZone = zoneRepository.save(new Zone("PRIVATE_ROOM"));
+
+			// Canonical table mapping (1..10)
+			// Main Hall: 1,2,3
 			Table table1 = new Table("Table 1", 2, mainZone, 100, 50, false);
 			Set<Feature> features1 = new HashSet<>();
 			features1.add(Feature.WINDOW);
 			table1.setFeatures(features1);
+			table1.setNearWindow(true);
+			table1.setNearKidsZone(false);
+			table1.setQuietCorner(false);
 			tableRepository.save(table1);
 
 			Table table2 = new Table("Table 2", 4, mainZone, 150, 100, false);
+			Set<Feature> features2 = new HashSet<>();
+			features2.add(Feature.WINDOW);
+			table2.setFeatures(features2);
+			table2.setNearWindow(true);
+			table2.setNearKidsZone(false);
+			table2.setQuietCorner(false);
 			tableRepository.save(table2);
 
-			Table table3 = new Table("Table 3", 4, mainZone, 200, 50, false);
+			Table table3 = new Table("Table 3", 8, mainZone, 200, 50, false);
+			table3.setNearWindow(false);
+			table3.setNearKidsZone(false);
+			table3.setQuietCorner(false);
 			tableRepository.save(table3);
 
-			Table table4 = new Table("Table 4", 2, mainZone, 250, 100, false);
+			// Private Room: 4
+			Table table4 = new Table("Table 4", 10, privateZone, 250, 100, false);
 			Set<Feature> features4 = new HashSet<>();
 			features4.add(Feature.WINDOW);
+			features4.add(Feature.PRIVATE_AREA);
 			table4.setFeatures(features4);
+			table4.setNearWindow(true);
+			table4.setNearKidsZone(false);
+			table4.setQuietCorner(true);
 			tableRepository.save(table4);
 
-			Table table5 = new Table("Large Table", 8, mainZone, 200, 250, false);
+			// Patio: 5,6,7 (kids subsection logic)
+			Table table5 = new Table("Table 5", 4, patioZone, 200, 250, false);
+			Set<Feature> features5 = new HashSet<>();
+			features5.add(Feature.WINDOW);
+			features5.add(Feature.KIDS_ZONE);
+			table5.setFeatures(features5);
+			table5.setNearWindow(true);
+			table5.setNearKidsZone(true);
+			table5.setQuietCorner(false);
 			tableRepository.save(table5);
 
-			Table table6 = new Table("Corner Table", 6, mainZone, 300, 200, false);
+			Table table6 = new Table("Table 6", 4, patioZone, 300, 200, false);
+			Set<Feature> features6 = new HashSet<>();
+			features6.add(Feature.WINDOW);
+			features6.add(Feature.KIDS_ZONE);
+			table6.setFeatures(features6);
+			table6.setNearWindow(true);
+			table6.setNearKidsZone(true);
+			table6.setQuietCorner(true);
 			tableRepository.save(table6);
 
-			// Patio tables
-			Table table7 = new Table("Patio Table 1", 6, patioZone, 250, 200, false);
+			Table table7 = new Table("Table 7", 4, patioZone, 250, 200, false);
 			Set<Feature> features7 = new HashSet<>();
-			features7.add(Feature.WINDOW);
+			features7.add(Feature.KIDS_ZONE);
 			table7.setFeatures(features7);
+			table7.setNearWindow(false);
+			table7.setNearKidsZone(true);
+			table7.setQuietCorner(true);
 			tableRepository.save(table7);
 
-			Table table8 = new Table("Patio Table 2", 4, patioZone, 100, 300, false);
+			// Terrace: 8,9,10
+			Table table8 = new Table("Table 8", 2, balconyZone, 100, 300, false);
+			table8.setNearWindow(false);
+			table8.setNearKidsZone(false);
+			table8.setQuietCorner(false);
 			tableRepository.save(table8);
 
-			Table table9 = new Table("Kids Zone Table", 4, patioZone, 150, 350, false);
-			Set<Feature> features9 = new HashSet<>();
-			features9.add(Feature.KIDS_ZONE);
-			table9.setFeatures(features9);
+			Table table9 = new Table("Table 9", 2, balconyZone, 150, 350, false);
+			table9.setNearWindow(false);
+			table9.setNearKidsZone(false);
+			table9.setQuietCorner(false);
 			tableRepository.save(table9);
 
-			Table table10 = new Table("Outdoor Table", 2, patioZone, 200, 300, false);
+			Table table10 = new Table("Table 10", 2, balconyZone, 200, 300, false);
+			Set<Feature> features10 = new HashSet<>();
+			features10.add(Feature.WINDOW);
+			table10.setFeatures(features10);
+			table10.setNearWindow(true);
+			table10.setNearKidsZone(false);
+			table10.setQuietCorner(false);
 			tableRepository.save(table10);
-
-			// Balcony tables
-			Table table11 = new Table("Balcony Corner", 2, balconyZone, 300, 150, false);
-			Set<Feature> features11 = new HashSet<>();
-			features11.add(Feature.WINDOW);
-			table11.setFeatures(features11);
-			tableRepository.save(table11);
-
-			Table table12 = new Table("Balcony View", 4, balconyZone, 350, 100, false);
-			Set<Feature> features12 = new HashSet<>();
-			features12.add(Feature.WINDOW);
-			table12.setFeatures(features12);
-			tableRepository.save(table12);
-
-			Table table13 = new Table("Balcony Duo", 2, balconyZone, 400, 150, false);
-			tableRepository.save(table13);
-
-			// Private Room tables
-			Table table14 = new Table("Private Table 1", 6, privateZone, 400, 100, false);
-			Set<Feature> features14 = new HashSet<>();
-			features14.add(Feature.PRIVATE_AREA);
-			table14.setFeatures(features14);
-			tableRepository.save(table14);
-
-			Table table15 = new Table("Private Table 2", 8, privateZone, 450, 150, false);
-			Set<Feature> features15 = new HashSet<>();
-			features15.add(Feature.PRIVATE_AREA);
-			table15.setFeatures(features15);
-			tableRepository.save(table15);
-
-			Table table16 = new Table("Private Cozy", 4, privateZone, 430, 80, false);
-			Set<Feature> features16 = new HashSet<>();
-			features16.add(Feature.PRIVATE_AREA);
-			table16.setFeatures(features16);
-			tableRepository.save(table16);
 		};
 	}
 

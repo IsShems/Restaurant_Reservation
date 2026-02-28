@@ -11,8 +11,8 @@ export default function Legend() {
     },
     {
       color: "red",
-      label: "Occupied",
-      description: "Table is currently booked",
+      label: "Occupied / Not Suitable",
+      description: "Table is currently booked or not suitable",
     },
     {
       color: "purple-glow",
@@ -35,7 +35,7 @@ export default function Legend() {
     >
       <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
         <span className="text-lg mr-2">📋</span>
-        Table Status Legend
+        Table Status
       </h3>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -53,7 +53,10 @@ export default function Legend() {
                 <div className="w-4 h-4 rounded-full bg-gradient-to-br from-purple-accent to-purple-dark" />
               )}
               {item.color === "red" && (
-                <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-accent to-red-dark" />
+                <div
+                  className="w-4 h-4 rounded-full bg-gradient-to-br from-purple-accent to-purple-dark"
+                  style={{ opacity: 0.45 }}
+                />
               )}
               {item.color === "purple-glow" && (
                 <div
