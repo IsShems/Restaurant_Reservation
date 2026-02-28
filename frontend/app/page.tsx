@@ -177,14 +177,17 @@ export default function Home() {
     return (adjacencyMap[aNum] || []).includes(bNum);
   };
 
-  const addToast = (type: "success" | "error" | "info", message: string) => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, type, message }]);
-  };
+  const addToast = useCallback(
+    (type: "success" | "error" | "info", message: string) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      setToasts((prev) => [...prev, { id, type, message }]);
+    },
+    [],
+  );
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
 
   const fetchAllTables = useCallback(async () => {
     try {
@@ -232,9 +235,9 @@ export default function Home() {
       setIsLoading(true);
 
       try {
-        // Calculate end time (1 hour after start time)
+        // Calculate end time (2 hours after start time)
         const [hours] = filters.time.split(":");
-        const endHour = (parseInt(hours) + 1) % 24;
+        const endHour = (parseInt(hours, 10) + 2) % 24;
         const endTime = `${endHour.toString().padStart(2, "0")}:00`;
 
         // Build query string
@@ -537,7 +540,7 @@ export default function Home() {
 
     try {
       const [hours] = currentFilters.time.split(":");
-      const endHour = (parseInt(hours) + 1) % 24;
+      const endHour = (parseInt(hours, 10) + 2) % 24;
       const endTime = `${endHour.toString().padStart(2, "0")}:00`;
 
       for (const selectedTable of selectedTables) {

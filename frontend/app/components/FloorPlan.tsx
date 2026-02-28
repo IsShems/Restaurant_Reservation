@@ -608,6 +608,7 @@ export default function FloorPlan({
                       prWidth * 0.95 * 1.1,
                       renderW * 1.35 * 1.1 * 1.1,
                     );
+                    renderW = renderW * 0.7;
                     finalY =
                       canvasSize.h * 0.65 + canvasSize.h * 0.1 - renderH * 0.15;
                     renderX = prLeft + (prWidth - renderW) / 2;

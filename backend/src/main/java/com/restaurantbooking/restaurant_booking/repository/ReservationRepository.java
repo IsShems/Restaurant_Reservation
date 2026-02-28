@@ -25,4 +25,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
      */
     List<Reservation> findByTableIdAndDatetimeStartLessThanAndDatetimeEndGreaterThan(
         Long tableId, LocalDateTime endTime, LocalDateTime startTime);
+
+    /**
+     * Find all reservations that overlap with a given time range.
+     */
+    List<Reservation> findByDatetimeStartLessThanAndDatetimeEndGreaterThan(
+        LocalDateTime endTime, LocalDateTime startTime);
 }
