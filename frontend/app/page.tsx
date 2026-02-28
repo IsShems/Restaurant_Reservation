@@ -258,6 +258,12 @@ export default function Home() {
 
         const data = await response.json();
 
+        const occupiedIds = new Set<string>(
+          (data.occupiedTableIds || []).map((id: number | string) =>
+            String(id),
+          ),
+        );
+
         const availableIds = new Set<string>(
           (data.availableTables || []).map((table: Table) => String(table.id)),
         );
@@ -414,9 +420,11 @@ export default function Home() {
           const isAvailable = availableIds.has(String(table.id));
           const isInZone = zoneMatches(table);
           const dimForZone = !!zoneFilter && !isInZone;
+          const isOccupiedFromResponse = occupiedIds.has(String(table.id));
           return {
             ...table,
-            occupied: !isAvailable,
+            occupied:
+              occupiedIds.size > 0 ? isOccupiedFromResponse : !isAvailable,
             uiDimmed: dimForZone,
           };
         });
@@ -534,6 +542,29 @@ export default function Home() {
         "For 2 guests, please select one suitable table only. Multiple-table reservation is not allowed.",
       );
       return;
+    }
+
+    const totalSelectedSeats = selectedTables.reduce(
+      (sum, table) => sum + table.capacity,
+      0,
+    );
+
+    if (totalSelectedSeats < currentFilters.guests) {
+      addToast(
+        "error",
+        "Selected table(s) do not have enough seats for your group.",
+      );
+      return;
+    }
+
+    if (
+      currentFilters.guests === 2 &&
+      selectedTables.some((table) => table.capacity >= 10)
+    ) {
+      addToast(
+        "info",
+        "This table has significantly more seats than needed. Please consider choosing a smaller table.",
+      );
     }
 
     setIsReserving(true);

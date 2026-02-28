@@ -73,6 +73,7 @@ public class SearchController {
             // Build response
             Map<String, Object> response = new HashMap<>();
             response.put("availableTables", availableTables);
+            response.put("occupiedTableIds", unavailableIds);
             response.put("recommendedTableId", recommendedTableId);
             response.put("totalAvailable", availableTables.size());
 
