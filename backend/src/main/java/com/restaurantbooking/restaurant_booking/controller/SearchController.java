@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for advanced table search with recommendations.
@@ -49,10 +50,9 @@ public class SearchController {
             // Parse date and time
             LocalDate localDate = LocalDate.parse(date);
             LocalTime start = LocalTime.parse(startTime);
-            LocalTime end = LocalTime.parse(endTime);
             
             LocalDateTime startDateTime = LocalDateTime.of(localDate, start);
-            LocalDateTime endDateTime = LocalDateTime.of(localDate, end);
+            LocalDateTime endDateTime = startDateTime.plusHours(2);
 
             // Parse preferences
             Set<Preference> preferenceSet = parsePreferences(preferences);
@@ -60,6 +60,11 @@ public class SearchController {
             // Get available tables
             List<Table> availableTables = tableService.getAvailableTables(
                 startDateTime, endDateTime, guestCount, zone, preferenceSet);
+
+                Set<Long> unavailableIds = reservationService.getUnavailableTableIdsForSlot(startDateTime, endDateTime);
+                availableTables = availableTables.stream()
+                    .filter(table -> !unavailableIds.contains(table.getId()))
+                    .collect(Collectors.toList());
 
             // Find recommended table
             Long recommendedTableId = RecommendationService.findRecommendedTableId(
@@ -87,15 +92,13 @@ public class SearchController {
         try {
             LocalDate localDate = LocalDate.parse(request.getDate());
             LocalTime start = LocalTime.parse(request.getStartTime());
-            LocalTime end = LocalTime.parse(request.getEndTime());
             
             LocalDateTime startDateTime = LocalDateTime.of(localDate, start);
-            LocalDateTime endDateTime = LocalDateTime.of(localDate, end);
 
             Reservation reservation = reservationService.createReservation(
                 request.getTable(),
                 startDateTime,
-                endDateTime,
+                startDateTime.plusHours(2),
                 request.getGuestCount());
 
             Map<String, Object> response = new HashMap<>();

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export interface Toast {
   id: string;
@@ -34,10 +34,25 @@ function ToastItem({
   toast: Toast;
   onRemove: (id: string) => void;
 }) {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleClose = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    onRemove(toast.id);
+  }, [onRemove, toast.id]);
+
   useEffect(() => {
-    const timer = setTimeout(() => onRemove(toast.id), toast.duration || 4000);
-    return () => clearTimeout(timer);
-  }, [toast, onRemove]);
+    timeoutRef.current = setTimeout(handleClose, toast.duration || 4000);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [handleClose, toast.duration]);
 
   const bgColor =
     toast.type === "success"
@@ -67,7 +82,7 @@ function ToastItem({
       <span className="text-lg font-bold">{icon}</span>
       <p className="text-sm text-white flex-1">{toast.message}</p>
       <button
-        onClick={() => onRemove(toast.id)}
+        onClick={handleClose}
         className="text-white/60 hover:text-white transition-colors"
       >
         ✕
