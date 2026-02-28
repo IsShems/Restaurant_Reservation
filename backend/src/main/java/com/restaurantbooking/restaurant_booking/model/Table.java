@@ -49,6 +49,10 @@ public class Table {
     @Enumerated(EnumType.STRING)
     private Set<Feature> features = new HashSet<>();
 
+    private boolean nearWindow;
+    private boolean nearKidsZone;
+    private boolean quietCorner;
+
     // Whether the table is currently occupied / reserved
     private boolean occupied;
 
@@ -129,5 +133,29 @@ public class Table {
 
     public void setOccupied(boolean occupied) {
         this.occupied = occupied;
+    }
+
+    public boolean isNearWindow() {
+        return nearWindow;
+    }
+
+    public void setNearWindow(boolean nearWindow) {
+        this.nearWindow = nearWindow;
+    }
+
+    public boolean isNearKidsZone() {
+        return nearKidsZone;
+    }
+
+    public void setNearKidsZone(boolean nearKidsZone) {
+        this.nearKidsZone = nearKidsZone;
+    }
+
+    public boolean isQuietCorner() {
+        return quietCorner;
+    }
+
+    public void setQuietCorner(boolean quietCorner) {
+        this.quietCorner = quietCorner;
     }
 }

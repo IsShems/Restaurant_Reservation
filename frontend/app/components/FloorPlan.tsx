@@ -9,15 +9,20 @@ interface Table {
   capacity: number;
   zone: { id: number; name: string };
   features: string[];
+  nearWindow?: boolean;
+  nearKidsZone?: boolean;
+  quietCorner?: boolean;
   occupied: boolean;
   positionX: number;
   positionY: number;
+  uiDimmed?: boolean;
 }
 
 interface FloorPlanProps {
   tables: Table[];
   recommendedTableId?: number | null;
-  selectedTableId?: number | null;
+  recommendedGroupIds?: Array<number | string>;
+  selectedTableIds?: Array<number | string>;
   onTableClick: (table: Table) => void;
   isLoading?: boolean;
 }
@@ -25,7 +30,8 @@ interface FloorPlanProps {
 export default function FloorPlan({
   tables,
   recommendedTableId,
-  selectedTableId,
+  recommendedGroupIds = [],
+  selectedTableIds = [],
   onTableClick,
   isLoading,
 }: FloorPlanProps) {
@@ -143,58 +149,6 @@ export default function FloorPlan({
       tableRoleById.set(table.id, "terrace-right");
     else tableRoleById.set(table.id, "regular");
   }
-
-  const ensureVisualTable = (zoneKey: string, table: Table, role: string) => {
-    if (!tablesByZone[zoneKey].some((t) => t.id === table.id)) {
-      tablesByZone[zoneKey].push(table);
-      tableRoleById.set(table.id, role);
-    }
-  };
-
-  ensureVisualTable(
-    "Terrace",
-    {
-      id: "visual-terrace-left-1",
-      name: "Terrace Left 1",
-      capacity: 2,
-      zone: { id: -1, name: "Terrace" },
-      features: ["terrace"],
-      occupied: false,
-      positionX: 0,
-      positionY: 0,
-    },
-    "terrace-left-1",
-  );
-
-  ensureVisualTable(
-    "Terrace",
-    {
-      id: "visual-terrace-left-2",
-      name: "Terrace Left 2",
-      capacity: 2,
-      zone: { id: -1, name: "Terrace" },
-      features: ["terrace"],
-      occupied: false,
-      positionX: 0,
-      positionY: 0,
-    },
-    "terrace-left-2",
-  );
-
-  ensureVisualTable(
-    "Patio",
-    {
-      id: "visual-patio-4-seat",
-      name: "Patio 4-seat",
-      capacity: 4,
-      zone: { id: -1, name: "Patio" },
-      features: ["patio"],
-      occupied: false,
-      positionX: 0,
-      positionY: 0,
-    },
-    "patio-4-seat",
-  );
 
   const displayNameByZoneAndId = new Map<string, string>();
   const displayNameById = new Map<Table["id"], string>();
@@ -335,6 +289,8 @@ export default function FloorPlan({
         {/* Tables laid out in fixed spatial zones */}
         {(() => {
           let table2BottomBoundary: number | null = null;
+          let table1RightBoundary: number | null = null;
+          let table1BottomBoundary: number | null = null;
 
           return zoneLayouts.map((zone) => {
             const zoneLeft = (zone.leftPct / 100) * canvasSize.w;
@@ -344,52 +300,6 @@ export default function FloorPlan({
 
             const alignmentAxisY = canvasSize.h * 0.24;
             const zoneTables = [...(tablesByZone[zone.key] || [])];
-
-            const hasTableByName = (arr: Table[], name: string) =>
-              arr.some((t) => t.name.toLowerCase() === name.toLowerCase());
-
-            if (zone.key === "Terrace") {
-              if (!hasTableByName(zoneTables, "Terrace Left 1")) {
-                zoneTables.push({
-                  id: "visual-terrace-left-1",
-                  name: "Terrace Left 1",
-                  capacity: 2,
-                  zone: { id: -1, name: "Terrace" },
-                  features: ["terrace"],
-                  occupied: false,
-                  positionX: 0,
-                  positionY: 0,
-                });
-              }
-              if (!hasTableByName(zoneTables, "Terrace Left 2")) {
-                zoneTables.push({
-                  id: "visual-terrace-left-2",
-                  name: "Terrace Left 2",
-                  capacity: 2,
-                  zone: { id: -1, name: "Terrace" },
-                  features: ["terrace"],
-                  occupied: false,
-                  positionX: 0,
-                  positionY: 0,
-                });
-              }
-            }
-
-            if (
-              zone.key === "Patio" &&
-              !hasTableByName(zoneTables, "Patio 4-seat")
-            ) {
-              zoneTables.push({
-                id: "visual-patio-4-seat",
-                name: "Patio 4-seat",
-                capacity: 4,
-                zone: { id: -1, name: "Patio" },
-                features: ["patio"],
-                occupied: false,
-                positionX: 0,
-                positionY: 0,
-              });
-            }
 
             const zonePaddingX = 14;
             const zonePaddingY = 14;
@@ -409,11 +319,15 @@ export default function FloorPlan({
                 return { w: side, h: side };
               }
               if (cap <= 4) {
+                const widthLikeTwoSeats = Math.max(
+                  30,
+                  Math.min(56, Math.floor(referenceW * 0.22)),
+                );
                 const side = Math.max(
                   44,
                   Math.min(78, Math.floor(referenceW * 0.28)),
                 );
-                return { w: side, h: side };
+                return { w: widthLikeTwoSeats, h: side };
               }
               return {
                 w: Math.max(70, Math.min(130, Math.floor(referenceW * 0.42))),
@@ -569,14 +483,18 @@ export default function FloorPlan({
               const gap = Math.max(14, Math.floor(baseSize.w * 0.35));
 
               terraceOrdered.forEach((table, idx) => {
-                const size = sizeForFixed(
-                  table.capacity,
-                  usableZoneW,
-                  usableZoneH,
-                );
+                const lower = table.name.toLowerCase();
+                const size =
+                  lower === "table 8" ||
+                  lower === "table 9" ||
+                  lower === "table 10"
+                    ? sizeForFixed(2, usableZoneW, usableZoneH)
+                    : sizeForFixed(table.capacity, usableZoneW, usableZoneH);
 
                 let x = rightX;
-                const lower = table.name.toLowerCase();
+                if (lower === "table 10") x = rightX;
+                else if (lower === "table 9") x = rightX - (size.w + gap);
+                else if (lower === "table 8") x = rightX - (size.w + gap) * 2;
                 if (lower === "terrace left 1") x = rightX - (size.w + gap) * 2;
                 else if (lower === "terrace left 2")
                   x = rightX - (size.w + gap);
@@ -654,15 +572,14 @@ export default function FloorPlan({
                       ? alignmentAxisY - size.h / 2
                       : y;
 
-                  const displayName =
-                    displayNameByZoneAndId.get(`${zone.key}-${table.id}`) ||
-                    table.name;
+                  const displayName = table.name;
 
-                  const effectiveZoneKey =
-                    displayName === "Table 4" ? "Private Room" : zone.key;
+                  const effectiveZoneKey = zone.key;
 
-                  const isRecommended = table.id === recommendedTableId;
-                  const isSelected = table.id === selectedTableId;
+                  const isRecommended =
+                    table.id === recommendedTableId ||
+                    recommendedGroupIds.includes(table.id);
+                  const isSelected = selectedTableIds.includes(table.id);
                   const isAvailable = !table.occupied;
 
                   const isPatioTable1 = lowerName.includes("patio table 1");
@@ -686,13 +603,59 @@ export default function FloorPlan({
                     const prWidth = privateRoomRect
                       ? (privateRoomRect.widthPct / 100) * canvasSize.w
                       : canvasSize.w * 0.15;
-                    finalY = canvasSize.h * 0.65;
-                    renderH = canvasSize.h * 0.25;
+                    renderH = canvasSize.h * 0.25 * 1.4 * 0.8 * 0.9;
+                    renderW = Math.min(
+                      prWidth * 0.95 * 1.1,
+                      renderW * 1.35 * 1.1 * 1.1,
+                    );
+                    finalY =
+                      canvasSize.h * 0.65 + canvasSize.h * 0.1 - renderH * 0.15;
                     renderX = prLeft + (prWidth - renderW) / 2;
                   }
 
                   if (displayName === "Table 5") {
-                    renderX = renderX + 10;
+                    renderW = Math.max(34, Math.floor(renderW * 0.88));
+                    if (kidsZoneRect) {
+                      const kidsLeft =
+                        (kidsZoneRect.leftPct / 100) * canvasSize.w;
+                      const kidsTop =
+                        (kidsZoneRect.topPct / 100) * canvasSize.h;
+                      const kidsWidth =
+                        (kidsZoneRect.widthPct / 100) * canvasSize.w;
+                      renderX = kidsLeft + kidsWidth * 0.12;
+                      finalY = kidsTop + 10;
+                    } else {
+                      renderX = renderX + 10;
+                      finalY = finalY - 10;
+                    }
+                    if (table1BottomBoundary !== null) {
+                      finalY = table1BottomBoundary - renderH;
+                    }
+                  }
+
+                  if (displayName === "Table 1") {
+                    table1RightBoundary = renderX + renderW;
+                    table1BottomBoundary = finalY + renderH;
+                  }
+
+                  if (
+                    displayName === "Table 2" &&
+                    table1RightBoundary !== null
+                  ) {
+                    renderX = table1RightBoundary - renderW;
+                    if (table1BottomBoundary !== null) {
+                      finalY = table1BottomBoundary + 14;
+                    }
+                  }
+
+                  if (
+                    displayName === "Table 3" &&
+                    table1RightBoundary !== null
+                  ) {
+                    renderX = table1RightBoundary + 26;
+                    if (table1BottomBoundary !== null) {
+                      finalY = table1BottomBoundary - renderH;
+                    }
                   }
 
                   if (displayName === "Table 2") {
@@ -706,20 +669,24 @@ export default function FloorPlan({
                     finalY = table2BottomBoundary - renderH;
                   }
 
-                  const forceNotNearWindow =
-                    lowerName.includes("large table") ||
-                    lowerName.includes("patio table 1") ||
-                    lowerName === "patio 4-seat";
+                  if (displayName === "Table 7") {
+                    renderX =
+                      zoneLeft +
+                      zonePaddingX +
+                      usableZoneW * 0.38 -
+                      usableZoneW * 0.2;
+                    if (table1BottomBoundary !== null) {
+                      finalY = table1BottomBoundary - renderH;
+                    }
+                  }
 
-                  const forceNearWindow = isBalconyCorner;
+                  const nearWindow = !!table.nearWindow;
 
-                  const nearWindow =
-                    forceNearWindow ||
-                    (!forceNotNearWindow &&
-                      (renderX < 60 ||
-                        renderX + renderW > canvasSize.w - 60 ||
-                        finalY < 60 ||
-                        finalY + renderH > canvasSize.h - 60));
+                  const visualOpacity = table.uiDimmed
+                    ? Math.min(isAvailable ? 1 : 0.4, 0.35)
+                    : isAvailable
+                      ? 1
+                      : 0.4;
 
                   const cleanedFeatures = (table.features || [])
                     .map((feature) => feature.trim())
@@ -737,30 +704,26 @@ export default function FloorPlan({
                       return true;
                     });
 
-                  if (effectiveZoneKey === "Private Room") {
+                  if (table.quietCorner) {
                     cleanedFeatures.push("Quiet Corner");
                   }
 
                   let uniqueDescriptors = Array.from(new Set(cleanedFeatures));
 
-                  if (displayName === "Table 5") {
-                    uniqueDescriptors = uniqueDescriptors.filter(
-                      (desc) => !desc.toLowerCase().includes("private"),
-                    );
-                    uniqueDescriptors.push("Kids Zone");
+                  if (table.nearKidsZone) {
+                    uniqueDescriptors.push("Near Kids Zone");
                   }
 
-                  if (displayName === "Table 6") {
-                    uniqueDescriptors = uniqueDescriptors.filter(
-                      (desc) => !desc.toLowerCase().includes("kids zone"),
-                    );
-                  }
+                  uniqueDescriptors = Array.from(new Set(uniqueDescriptors));
 
-                  if (displayName === "Table 4" || displayName === "Table 10") {
-                    uniqueDescriptors = uniqueDescriptors.filter(
-                      (desc) => !desc.toLowerCase().includes("private area"),
-                    );
-                  }
+                  const displayCapacity =
+                    displayName === "Table 4"
+                      ? 10
+                      : displayName === "Table 8" ||
+                          displayName === "Table 9" ||
+                          displayName === "Table 10"
+                        ? 2
+                        : table.capacity;
 
                   return (
                     <motion.div
@@ -787,7 +750,7 @@ export default function FloorPlan({
                           height: "100%",
                           borderRadius: isRecommended ? 8 : 6,
                           background: "linear-gradient(135deg,#8b5cf6,#6d28d9)",
-                          opacity: isAvailable ? 1 : 0.4,
+                          opacity: visualOpacity,
                           boxShadow: isRecommended
                             ? "0 0 18px rgba(139,92,246,0.6)"
                             : "0 2px 8px rgba(0,0,0,0.3)",
@@ -806,7 +769,7 @@ export default function FloorPlan({
                             {displayName}
                           </span>
                           <span className="text-xs">
-                            {table.capacity} seats
+                            {displayCapacity} seats
                           </span>
                         </div>
 
@@ -819,7 +782,7 @@ export default function FloorPlan({
 
                       <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 bg-gray-900 text-white text-xs rounded px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-lg">
                         <div className="font-semibold">
-                          {displayName} • {table.capacity} seats
+                          {displayName} • {displayCapacity} seats
                         </div>
                         <div className="text-xs text-gray-300">
                           Zone: {effectiveZoneKey}
