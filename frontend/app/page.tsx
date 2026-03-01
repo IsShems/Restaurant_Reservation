@@ -156,6 +156,7 @@ export default function Home() {
   const [currentFilters, setCurrentFilters] = useState<FilterState | null>(
     null,
   );
+  const [usePersistedLayout, setUsePersistedLayout] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
   const [todaySpecial, setTodaySpecial] = useState<TodaySpecial | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -220,6 +221,23 @@ export default function Home() {
           } as Table;
         });
       setAllTables(normalizedList);
+
+      const latestById = new Map(
+        normalizedList.map((table) => [String(table.id), table]),
+      );
+
+      setTables((prev) =>
+        prev.map((table) => {
+          const latest = latestById.get(String(table.id));
+          if (!latest) return table;
+          return {
+            ...table,
+            positionX: latest.positionX,
+            positionY: latest.positionY,
+          };
+        }),
+      );
+
       if (!hasSearched) {
         setTables(
           normalizedList.map((t) => ({
@@ -237,6 +255,18 @@ export default function Home() {
   useEffect(() => {
     fetchAllTables();
   }, [fetchAllTables]);
+
+  useEffect(() => {
+    const onLayoutSaved = (event: StorageEvent) => {
+      if (event.key !== "admin-layout-saved") return;
+      setUsePersistedLayout(true);
+      fetchAllTables();
+      addToast("info", "Layout updated from admin panel.");
+    };
+
+    window.addEventListener("storage", onLayoutSaved);
+    return () => window.removeEventListener("storage", onLayoutSaved);
+  }, [fetchAllTables, addToast]);
 
   const fetchAvailableTables = useCallback(
     async (filters: FilterState) => {
@@ -726,6 +756,7 @@ export default function Home() {
                 selectedTableIds={selectedTableIds}
                 onTableClick={handleTableSelect}
                 isLoading={isLoading}
+                usePersistedLayout={usePersistedLayout}
               />
 
               {/* Legend */}
