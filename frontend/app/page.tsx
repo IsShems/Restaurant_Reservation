@@ -705,49 +705,51 @@ export default function Home() {
         </motion.div>
 
         {/* Floor Plan Section - Below Filter */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="space-y-4"
-        >
-          <>
-            {noPerfectMatch && (
-              <div className="text-sm text-gray-300">
-                No perfect match found
-              </div>
-            )}
+        {hasSearched && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="space-y-4"
+          >
+            <>
+              {noPerfectMatch && (
+                <div className="text-sm text-gray-300">
+                  No perfect match found
+                </div>
+              )}
 
-            <FloorPlan
-              tables={tables.length ? tables : allTables}
-              recommendedTableId={recommendedTableId}
-              recommendedGroupIds={recommendedGroupIds}
-              selectedTableIds={selectedTableIds}
-              onTableClick={handleTableSelect}
-              isLoading={isLoading}
-            />
+              <FloorPlan
+                tables={tables.length ? tables : allTables}
+                recommendedTableId={recommendedTableId}
+                recommendedGroupIds={recommendedGroupIds}
+                selectedTableIds={selectedTableIds}
+                onTableClick={handleTableSelect}
+                isLoading={isLoading}
+              />
 
-            {/* Legend */}
-            <Legend />
+              {/* Legend */}
+              <Legend />
 
-            {/* Reserve Button */}
-            {selectedTableIds.length > 0 && !isLoading && (
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={handleReserve}
-                disabled={isReserving}
-                className="w-full py-3 rounded-lg font-semibold text-white transition-all
+              {/* Reserve Button */}
+              {selectedTableIds.length > 0 && !isLoading && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={handleReserve}
+                  disabled={isReserving}
+                  className="w-full py-3 rounded-lg font-semibold text-white transition-all
                     bg-gradient-to-r from-purple-accent to-purple-dark hover:from-purple-dark hover:to-purple-accent
                     active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isReserving
-                  ? "Reserving..."
-                  : `Reserve Table${selectedTableIds.length > 1 ? "s" : ""} ${selectedTableIds.join(" + ")}`}
-              </motion.button>
-            )}
-          </>
-        </motion.div>
+                >
+                  {isReserving
+                    ? "Reserving..."
+                    : `Reserve Table${selectedTableIds.length > 1 ? "s" : ""} ${selectedTableIds.join(" + ")}`}
+                </motion.button>
+              )}
+            </>
+          </motion.div>
+        )}
       </div>
 
       <AnimatePresence>
