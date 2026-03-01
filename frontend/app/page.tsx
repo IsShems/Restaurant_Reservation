@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { FilterState } from "./components/FilterForm";
 import FloorPlan from "./components/FloorPlan";
 import Legend from "./components/Legend";
@@ -23,6 +23,12 @@ interface Table {
   positionX: number;
   positionY: number;
   uiDimmed?: boolean;
+}
+
+interface TodaySpecial {
+  name: string;
+  image: string;
+  category: string;
 }
 
 type TableRule = {
@@ -151,6 +157,8 @@ export default function Home() {
     null,
   );
   const [isReserving, setIsReserving] = useState(false);
+  const [todaySpecial, setTodaySpecial] = useState<TodaySpecial | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const adjacencyMap: Record<number, number[]> = {
     1: [2, 3],
@@ -629,6 +637,24 @@ export default function Home() {
         ),
       );
 
+      try {
+        const mealResponse = await fetch(
+          "https://www.themealdb.com/api/json/v1/1/random.php",
+        );
+        if (mealResponse.ok) {
+          const mealData = await mealResponse.json();
+          const meal = mealData?.meals?.[0];
+          if (meal?.strMeal && meal?.strMealThumb && meal?.strCategory) {
+            setTodaySpecial({
+              name: meal.strMeal,
+              image: meal.strMealThumb,
+              category: meal.strCategory,
+            });
+            setIsModalOpen(true);
+          }
+        }
+      } catch {}
+
       setSelectedTableIds([]);
     } catch (err) {
       addToast(
@@ -723,6 +749,49 @@ export default function Home() {
           </>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {isModalOpen && todaySpecial && (
+          <motion.div
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            onClick={() => setIsModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="w-full max-w-md rounded-2xl border border-dark-border bg-dark-card text-white shadow-xl p-6 md:p-8"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold mb-2">
+                🍽 Today&apos;s Special
+              </h2>
+              <h3 className="text-lg font-semibold mb-1">
+                {todaySpecial.name}
+              </h3>
+              <p className="text-sm text-gray-300 mb-4">
+                Category: {todaySpecial.category}
+              </p>
+              <img
+                src={todaySpecial.image}
+                alt={todaySpecial.name}
+                className="w-full rounded-lg border border-dark-border mb-5"
+              />
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="w-full py-2.5 rounded-lg font-semibold text-white transition-all bg-gradient-to-r from-purple-accent to-purple-dark hover:from-purple-dark hover:to-purple-accent hover:scale-[1.01]"
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />
