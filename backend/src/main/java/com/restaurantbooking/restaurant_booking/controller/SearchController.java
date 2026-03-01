@@ -14,9 +14,8 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controller for advanced table search with recommendations.
- */
+// EN: Exposes search and reservation endpoints used by the frontend booking flow.
+// EE: Pakub otsingu- ja broneerimisotspunkte, mida kasutab frontend broneerimisvoog.
 @RestController
 @RequestMapping("/api")
 public class SearchController {
@@ -27,16 +26,10 @@ public class SearchController {
     @Autowired
     private ReservationService reservationService;
 
-    /**
-     * Search for available tables with smart recommendation.
-     * Query parameters:
-     * - date: YYYY-MM-DD
-     * - startTime: HH:mm
-     * - endTime: HH:mm
-     * - guestCount: integer
-     * - zone: string (optional)
-     * - preferences: comma-separated (NEAR_WINDOW, PRIVATE_CORNER, NEAR_KIDS_ZONE)
-     */
+    // EN: Searches available tables for the requested slot and returns recommendation metadata.
+    // EE: Otsib soovitud ajale saadaolevaid laudu ja tagastab soovituse metaandmed.
+    // EN: Inputs come from query params; output includes available tables, occupied IDs, and recommended table ID.
+    // EE: Sisend tuleb päringuparameetritest; väljund sisaldab vabu laudu, hõivatud ID-sid ja soovitatud laua ID-d.
     @GetMapping("/search")
     public Map<String, Object> searchTables(
             @RequestParam String date,
@@ -47,17 +40,20 @@ public class SearchController {
             @RequestParam(required = false) String preferences) {
 
         try {
-            // Parse date and time
+            // EN: Normalize request date/time into a backend time window.
+            // EE: Normaliseeri päringu kuupäev/kellaaeg backendi ajavahemikuks.
             LocalDate localDate = LocalDate.parse(date);
             LocalTime start = LocalTime.parse(startTime);
             
             LocalDateTime startDateTime = LocalDateTime.of(localDate, start);
             LocalDateTime endDateTime = startDateTime.plusHours(2);
 
-            // Parse preferences
+            // EN: Convert raw preference tokens to enum values and ignore unknown values.
+            // EE: Teisenda eelistuse tokenid enum-väärtusteks ja ignoreeri tundmatuid väärtusi.
             Set<Preference> preferenceSet = parsePreferences(preferences);
 
-            // Get available tables
+            // EN: Fetch candidates, then remove unavailable IDs for the exact slot.
+            // EE: Too kandidaadid ning eemalda täpse ajavahemiku hõivatud lauad.
             List<Table> availableTables = tableService.getAvailableTables(
                 startDateTime, endDateTime, guestCount, zone, preferenceSet);
 
@@ -66,11 +62,13 @@ public class SearchController {
                     .filter(table -> !unavailableIds.contains(table.getId()))
                     .collect(Collectors.toList());
 
-            // Find recommended table
+            // EN: Score and select the best-fitting table from remaining candidates.
+            // EE: Hinda ja vali järelejäänud kandidaatide seast parima sobivusega laud.
             Long recommendedTableId = RecommendationService.findRecommendedTableId(
                 availableTables, guestCount, zone, preferenceSet);
 
-            // Build response
+            // EN: Build a UI-friendly response payload.
+            // EE: Koosta kasutajaliidesele sobiv vastusepayload.
             Map<String, Object> response = new HashMap<>();
             response.put("availableTables", availableTables);
             response.put("occupiedTableIds", unavailableIds);
@@ -85,9 +83,10 @@ public class SearchController {
         }
     }
 
-    /**
-     * Create a new reservation.
-     */
+    // EN: Creates a reservation for the selected table and requested guest count.
+    // EE: Loob broneeringu valitud lauale ja soovitud külaliste arvule.
+    // EN: Returns success flag and reservation payload, or an error message.
+    // EE: Tagastab edu-lipu ja broneeringu payloadi või veateate.
     @PostMapping("/reservations")
     public Map<String, Object> createReservation(@RequestBody ReservationRequest request) {
         try {
@@ -115,9 +114,10 @@ public class SearchController {
         }
     }
 
-    /**
-     * Parse preference string into Set of Preference enums.
-     */
+    // EN: Parses comma-separated preference values into enum set.
+    // EE: Parsib komaga eraldatud eelistused enum-kogumiks.
+    // EN: Invalid tokens are ignored to keep the search request tolerant.
+    // EE: Vigased tokenid ignoreeritakse, et otsingupäring jääks veataluvaks.
     private Set<Preference> parsePreferences(String preferencesStr) {
         Set<Preference> preferences = new HashSet<>();
         if (preferencesStr != null && !preferencesStr.isBlank()) {
@@ -126,16 +126,16 @@ public class SearchController {
                 try {
                     preferences.add(Preference.valueOf(part.trim()));
                 } catch (IllegalArgumentException e) {
-                    // Ignore invalid preference
+                    // EN: Skip invalid preference values instead of failing the whole request.
+                    // EE: Jäta vigased eelistused vahele, mitte ära nurja kogu päringut.
                 }
             }
         }
         return preferences;
     }
 
-    /**
-     * DTO for reservation creation request.
-     */
+    // EN: DTO representing reservation creation input payload.
+    // EE: DTO, mis kirjeldab broneeringu loomise sisendpayloadi.
     public static class ReservationRequest {
         private Table table;
         private String date;

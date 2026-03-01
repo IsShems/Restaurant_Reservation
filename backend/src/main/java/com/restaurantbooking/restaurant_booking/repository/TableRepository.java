@@ -7,29 +7,24 @@ import org.springframework.stereotype.Repository;
 
 import com.restaurantbooking.restaurant_booking.model.Table;
 
-/**
- * Repository for performing CRUD and query operations on Table entities.
- */
+// EN: Data-access repository for table entities and availability-related lookups.
+// EE: Andmepääsu repositoorium laua olemite ja saadavusega seotud päringute jaoks.
 @Repository
 public interface TableRepository extends JpaRepository<Table, Long> {
 
-    /**
-     * Find all tables that are not occupied (available).
-     */
+    // EN: Returns all tables currently marked as not occupied.
+    // EE: Tagastab kõik lauad, mis on märgitud hõivamata.
     List<Table> findByOccupiedFalse();
 
-    /**
-     * Find available tables filtered by zone ID.
-     */
+    // EN: Returns not-occupied tables for a specific zone ID.
+    // EE: Tagastab konkreetse tsooni hõivamata lauad.
     List<Table> findByZoneIdAndOccupiedFalse(Long zoneId);
 
-    /**
-     * Find all tables in a specific zone.
-     */
+    // EN: Returns all tables in a specific zone.
+    // EE: Tagastab kõik kindla tsooni lauad.
     List<Table> findByZoneId(Long zoneId);
 
-    /**
-     * Find tables by zone name.
-     */
+    // EN: Returns tables by zone name.
+    // EE: Tagastab lauad tsooninime alusel.
     List<Table> findByZoneName(String zoneName);
 }

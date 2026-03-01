@@ -14,9 +14,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Service for managing reservations with conflict detection.
- */
+// EN: Manages reservation lifecycle and time-slot conflict validation.
+// EE: Haldab broneeringute elutsüklit ja ajavahemike konfliktide kontrolli.
 @Service
 public class ReservationService {
 
@@ -28,16 +27,16 @@ public class ReservationService {
     @Autowired
     private TableRepository tableRepository;
 
-    /**
-     * Check if a table is available for the given time slot.
-     * A table is NOT available if:
-     * requestedStart < existingReservationEnd AND requestedEnd > existingReservationStart
-     */
+    // EN: Checks whether a table is free for the requested time window.
+    // EE: Kontrollib, kas laud on soovitud ajavahemikus vaba.
+    // EN: Returns false if any existing reservation overlaps the requested interval.
+    // EE: Tagastab false, kui mõni olemasolev broneering kattub küsitud vahemikuga.
     public boolean isTableAvailable(Table table, LocalDateTime startTime, LocalDateTime endTime) {
         List<Reservation> existingReservations = reservationRepository.findByTableId(table.getId());
         
         for (Reservation existing : existingReservations) {
-            // Check for time conflict
+            // EN: Overlap rule: [start, end) intersects when start < existingEnd and end > existingStart.
+            // EE: Kattuvuse reegel: [algus, lõpp) lõikub, kui algus < olemasolevLõpp ja lõpp > olemasolevAlgus.
             if (startTime.isBefore(existing.getDatetimeEnd()) && 
                 endTime.isAfter(existing.getDatetimeStart())) {
                 return false; // Conflict found
@@ -46,9 +45,10 @@ public class ReservationService {
         return true; // No conflicts
     }
 
-    /**
-     * Create a new reservation for a table.
-     */
+    // EN: Creates a reservation after availability validation and end-time normalization.
+    // EE: Loob broneeringu pärast saadavuse kontrolli ja lõppaja normaliseerimist.
+    // EN: Input endTime is ignored in favor of a fixed auto-expire duration.
+    // EE: Sisend-lõppaega ei kasutata; rakendatakse fikseeritud automaatne kehtivusaeg.
     public Reservation createReservation(Table table, LocalDateTime startTime, 
                                         LocalDateTime endTime, Integer guestCount) {
         LocalDateTime normalizedEndTime = startTime.plusHours(AUTO_EXPIRE_HOURS);
@@ -66,12 +66,10 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-    /**
-     * Returns unavailable table IDs for a slot.
-     * If real reservations exist, returns only real occupied table IDs.
-     * If no real reservations exist, returns 1-2 random table IDs for request-scoped testing.
-     * Random test occupancy is never persisted to the database.
-     */
+    // EN: Returns table IDs unavailable for the requested slot.
+    // EE: Tagastab soovitud ajavahemikus hõivatud laudade ID-d.
+    // EN: Uses real overlaps first; when none exist, returns a temporary random subset for testing UX.
+    // EE: Kasutab esmalt päris kattuvaid broneeringuid; nende puudumisel tagastab UX testimiseks ajutise juhuvalimi.
     public Set<Long> getUnavailableTableIdsForSlot(LocalDateTime startTime, LocalDateTime endTime) {
         Set<Long> realOccupied = reservationRepository
             .findByDatetimeStartLessThanAndDatetimeEndGreaterThan(endTime, startTime)
@@ -99,16 +97,14 @@ public class ReservationService {
         return shuffled.subList(0, randomCount).stream().collect(Collectors.toSet());
     }
 
-    /**
-     * Get all reservations for a specific table.
-     */
+    // EN: Fetches all reservations linked to one table.
+    // EE: Toob kõik ühe lauaga seotud broneeringud.
     public List<Reservation> getReservationsByTable(Long tableId) {
         return reservationRepository.findByTableId(tableId);
     }
 
-    /**
-     * Delete a reservation.
-     */
+    // EN: Deletes a reservation by identifier.
+    // EE: Kustutab broneeringu identifikaatori alusel.
     public void cancelReservation(Long reservationId) {
         reservationRepository.deleteById(reservationId);
     }

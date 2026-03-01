@@ -40,6 +40,8 @@ export default function FloorPlan({
   isLoading,
   usePersistedLayout = false,
 }: FloorPlanProps) {
+  // EN: Shared floor-plan renderer for user/admin flows with responsive zone-based placement.
+  // EE: Jagatud põhiplaani renderdaja kasutaja/admini voogudele koos responsiivse tsoonipõhise paigutusega.
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -66,7 +68,8 @@ export default function FloorPlan({
 
   const usableTables = [...tables];
 
-  // layout will be grid-like; we'll compute positions responsively inside the canvas
+  // EN: Compute layout positions responsively from current container size.
+  // EE: Arvuta paigutuskoordinaadid responsiivselt jooksva konteineri suuruse järgi.
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 900, h: 540 });
   useEffect(() => {
@@ -85,6 +88,8 @@ export default function FloorPlan({
   }, []);
 
   const normalizeZoneName = (table: Table) => {
+    // EN: Normalizes heterogeneous backend zone names into stable UI zone keys.
+    // EE: Normaliseerib heterogeensed backendi tsooninimed stabiilseteks UI tsoonivõtmeteks.
     const rawZone = (table.zone?.name || "").toLowerCase();
     if (rawZone.startsWith("ter") || rawZone.endsWith("ony")) return "Terrace";
     if (rawZone.includes("private")) return "Private Room";

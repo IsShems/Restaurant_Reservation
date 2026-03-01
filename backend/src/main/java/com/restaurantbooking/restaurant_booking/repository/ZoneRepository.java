@@ -5,10 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import com.restaurantbooking.restaurant_booking.model.Zone;
 
-/**
- * Repository for performing CRUD operations on Zone entities.
- */
+// EN: Data-access repository for zone entities.
+// EE: Andmepääsu repositoorium tsooni olemite jaoks.
 @Repository
 public interface ZoneRepository extends JpaRepository<Zone, Long> {
+    // EN: Finds one zone by its unique name.
+    // EE: Leiab ühe tsooni selle unikaalse nime järgi.
     Zone findByName(String name);
 }

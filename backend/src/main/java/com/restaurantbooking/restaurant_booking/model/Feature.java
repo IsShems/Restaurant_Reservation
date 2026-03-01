@@ -1,9 +1,7 @@
 package com.restaurantbooking.restaurant_booking.model;
 
-/**
- * Feature enum representing special features a table may have.
- * Used in Table.features ElementCollection.
- */
+// EN: Enumerates static table features used in recommendation and filtering.
+// EE: Loetleb laua staatilised omadused, mida kasutatakse soovituses ja filtreerimises.
 public enum Feature {
     WINDOW,           // Table is near a window
     PRIVATE_AREA,     // Table is in a secluded/private area

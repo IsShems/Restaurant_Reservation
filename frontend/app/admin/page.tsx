@@ -67,6 +67,8 @@ const decodeStoredPosition = (
   value: number | null | undefined,
   maxPx: number,
 ) => {
+  // EN: Decodes persisted relative coordinates into pixel coordinates for the editor canvas.
+  // EE: Dekodeerib püsitatud suhtelised koordinaadid redaktori lõuendi pikslikoordinaatideks.
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) {
     return 0;
@@ -80,6 +82,8 @@ const decodeStoredPosition = (
 };
 
 const encodeRelativePosition = (valuePx: number, maxPx: number) => {
+  // EN: Encodes pixel coordinates into a stable relative scale before persistence.
+  // EE: Kodeerib pikslikoordinaadid enne salvestamist stabiilsesse suhtelisse skaalasse.
   const safeMax = Math.max(1, maxPx);
   const percent = Math.max(0, Math.min(1, valuePx / safeMax));
   return Math.round(percent * RELATIVE_COORD_SCALE);
@@ -98,6 +102,8 @@ function toDisplayTime(value: string) {
 }
 
 export default function AdminPage() {
+  // EN: Admin workspace for authentication, floor-plan editing, and reservation management.
+  // EE: Admini töövaade autentimiseks, põhiplaani muutmiseks ja broneeringute haldamiseks.
   const canvasViewportRef = useRef<HTMLDivElement | null>(null);
 
   const getTableDimensions = (tableName: string) => {

@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
+// EN: Provides authenticated admin endpoints for auth, layout management, and reservation administration.
+// EE: Pakub autentitud admini otspunkte autentimiseks, paigutuse halduseks ja broneeringute administreerimiseks.
 public class AdminController {
 
     private static final String ADMIN_COOKIE_NAME = "admin_auth";
@@ -47,6 +49,8 @@ public class AdminController {
         this.layoutStateService = layoutStateService;
     }
 
+    // EN: Authenticates admin credentials and issues an HTTP-only session cookie.
+    // EE: Autendib admini mandaadid ja väljastab HTTP-only sessiooniküpsise.
     @PostMapping("/auth/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody AdminLoginRequest request) {
         if (request == null || !adminAuthService.verifyPassword(request.getPassword())) {
@@ -66,6 +70,8 @@ public class AdminController {
             .body(Map.of("success", true));
     }
 
+    // EN: Invalidates the admin session cookie.
+    // EE: Muudab admini sessiooniküpsise kehtetuks.
     @PostMapping("/auth/logout")
     public ResponseEntity<Map<String, Object>> logout() {
         ResponseCookie cookie = ResponseCookie.from(ADMIN_COOKIE_NAME, "")
@@ -80,11 +86,15 @@ public class AdminController {
             .body(Map.of("success", true));
     }
 
+    // EN: Returns whether the current request carries a valid admin session.
+    // EE: Tagastab, kas praeguses päringus on kehtiv admini sessioon.
     @GetMapping("/auth/session")
     public Map<String, Object> getSessionStatus(HttpServletRequest request) {
         return Map.of("authenticated", isAuthenticated(request));
     }
 
+    // EN: Changes admin password when current password validation succeeds.
+    // EE: Vahetab admini parooli, kui praegune parool läbib kontrolli.
     @PostMapping("/auth/change-password")
     public ResponseEntity<Map<String, Object>> changePassword(
         @RequestBody ChangePasswordRequest request,
@@ -108,6 +118,8 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    // EN: Returns current table layout coordinates and active-layout flag.
+    // EE: Tagastab praegused laudade koordinaadid ja aktiivse paigutuse lipu.
     @GetMapping("/tables/layout")
     public ResponseEntity<?> getLayout(HttpServletRequest request) {
         ResponseEntity<Map<String, Object>> unauthorized = unauthorizedIfNeeded(request);
@@ -131,6 +143,8 @@ public class AdminController {
         ));
     }
 
+    // EN: Persists table position updates from admin layout editor.
+    // EE: Salvestab admini paigutusredaktorist tulnud lauaasendite uuendused.
     @PutMapping("/tables/layout")
     public ResponseEntity<Map<String, Object>> saveLayout(@RequestBody SaveLayoutRequest request, HttpServletRequest httpRequest) {
         ResponseEntity<Map<String, Object>> unauthorized = unauthorizedIfNeeded(httpRequest);
@@ -142,6 +156,8 @@ public class AdminController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "No positions provided"));
         }
 
+        // EN: Validate IDs up-front to avoid partial updates.
+        // EE: Kontrolli ID-d ette, et vältida osalisi uuendusi.
         Set<Long> ids = request.getPositions().stream()
             .map(TablePositionUpdate::getId)
             .collect(Collectors.toSet());
@@ -158,6 +174,8 @@ public class AdminController {
                 .body(Map.of("success", false, "message", "One or more tables were not found"));
         }
 
+        // EN: Apply incoming coordinates to managed entities, then save in one batch.
+        // EE: Rakenda sisendtkoordinaadid hallatavatele objektidele ja salvesta korraga.
         for (TablePositionUpdate update : request.getPositions()) {
             Table table = tableById.get(update.getId());
             table.setPositionX(update.getPositionX());
@@ -169,6 +187,8 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    // EN: Returns reservations grouped into today, last 7 days, and upcoming.
+    // EE: Tagastab broneeringud gruppides: täna, viimased 7 päeva ja tulevased.
     @GetMapping("/reservations")
     public ResponseEntity<?> getReservationGroups(HttpServletRequest request) {
         ResponseEntity<Map<String, Object>> unauthorized = unauthorizedIfNeeded(request);
@@ -205,6 +225,8 @@ public class AdminController {
         ));
     }
 
+    // EN: Deletes a reservation by ID when admin is authorized.
+    // EE: Kustutab broneeringu ID alusel, kui admin on autoriseeritud.
     @DeleteMapping("/reservations/{id}")
     public ResponseEntity<Map<String, Object>> deleteReservation(@PathVariable Long id, HttpServletRequest request) {
         ResponseEntity<Map<String, Object>> unauthorized = unauthorizedIfNeeded(request);
@@ -221,6 +243,8 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    // EN: Returns 401 response when request is not authenticated; otherwise null.
+    // EE: Tagastab 401 vastuse, kui päring pole autentitud; muul juhul null.
     private ResponseEntity<Map<String, Object>> unauthorizedIfNeeded(HttpServletRequest request) {
         if (!isAuthenticated(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -229,6 +253,8 @@ public class AdminController {
         return null;
     }
 
+    // EN: Validates admin session cookie presence and expected value.
+    // EE: Kontrollib admini sessiooniküpsise olemasolu ja oodatud väärtust.
     private boolean isAuthenticated(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null || cookies.length == 0) {
@@ -244,6 +270,8 @@ public class AdminController {
         return false;
     }
 
+    // EN: Maps reservation entity into admin-friendly DTO fields.
+    // EE: Kaardistab broneeringu olemi adminile sobivaks DTO-väljundiks.
     private ReservationDto toReservationDto(Reservation reservation) {
         String tableDisplay = reservation.getTable() != null && reservation.getTable().getName() != null
             ? reservation.getTable().getName()
@@ -260,6 +288,8 @@ public class AdminController {
         );
     }
 
+    // EN: DTO for admin login payload.
+    // EE: DTO admini sisselogimise payloadi jaoks.
     public static class AdminLoginRequest {
         private String password;
 
@@ -272,6 +302,8 @@ public class AdminController {
         }
     }
 
+    // EN: DTO for password change payload.
+    // EE: DTO parooli vahetamise payloadi jaoks.
     public static class ChangePasswordRequest {
         private String currentPassword;
         private String newPassword;
@@ -293,6 +325,8 @@ public class AdminController {
         }
     }
 
+    // EN: DTO carrying a batch of table position updates.
+    // EE: DTO, mis kannab lauaasendite uuenduste paketti.
     public static class SaveLayoutRequest {
         private List<TablePositionUpdate> positions;
 
@@ -305,6 +339,8 @@ public class AdminController {
         }
     }
 
+    // EN: DTO for a single table coordinate update.
+    // EE: DTO ühe laua koordinaadi uuenduse jaoks.
     public static class TablePositionUpdate {
         private Long id;
         private Integer positionX;
@@ -335,6 +371,8 @@ public class AdminController {
         }
     }
 
+    // EN: DTO representing table layout data sent to admin UI.
+    // EE: DTO, mis kirjeldab admin UI-le saadetavat laua paigutusandmestikku.
     public static class TableLayoutDto {
         private Long id;
         private String name;
@@ -371,6 +409,8 @@ public class AdminController {
         }
     }
 
+    // EN: DTO representing reservation data in admin views.
+    // EE: DTO, mis kirjeldab adminvaadetes kuvatavaid broneeringuandmeid.
     public static class ReservationDto {
         private Long id;
         private String guestName;
