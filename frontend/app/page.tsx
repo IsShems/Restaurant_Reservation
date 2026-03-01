@@ -557,14 +557,21 @@ export default function Home() {
       return;
     }
 
+    const guestCount = Number(currentFilters.guests);
+
     if (
-      currentFilters.guests === 2 &&
-      selectedTables.some((table) => table.capacity >= 10)
+      Number.isFinite(guestCount) &&
+      guestCount >= 1 &&
+      guestCount <= 3 &&
+      selectedTables.some(
+        (table) => table.capacity >= 8 && table.capacity <= 10,
+      )
     ) {
       addToast(
-        "info",
-        "This table has significantly more seats than needed. Please consider choosing a smaller table.",
+        "error",
+        "You have selected a table for 8–10 guests, but your reservation is for 1-3 people. Please choose a smaller table.",
       );
+      return;
     }
 
     setIsReserving(true);
@@ -603,7 +610,25 @@ export default function Home() {
           .map((table) => table.name)
           .join(", ")}!`,
       );
-      fetchAvailableTables(currentFilters);
+
+      const bookedIds = new Set(
+        selectedTables.map((table) => String(table.id)),
+      );
+      setTables((prev) =>
+        prev.map((table) =>
+          bookedIds.has(String(table.id))
+            ? { ...table, occupied: true }
+            : table,
+        ),
+      );
+      setAllTables((prev) =>
+        prev.map((table) =>
+          bookedIds.has(String(table.id))
+            ? { ...table, occupied: true }
+            : table,
+        ),
+      );
+
       setSelectedTableIds([]);
     } catch (err) {
       addToast(
