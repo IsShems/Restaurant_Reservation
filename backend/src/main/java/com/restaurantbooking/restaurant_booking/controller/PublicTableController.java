@@ -8,12 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.restaurantbooking.restaurant_booking.model.Table;
 import com.restaurantbooking.restaurant_booking.repository.TableRepository;
 
-/**
- * Public-facing controller to expose a simple `/tables` endpoint
- * so non-API clients (like the frontend) can fetch tables without
- * using the `/api` prefix. This endpoint returns all tables (including
- * occupied) by calling the repository directly.
- */
+// EN: Exposes a public `/tables` endpoint for simple frontend table loading.
+// EE: Pakub avaliku `/tables` otspunkti, et frontend saaks lauad lihtsalt laadida.
 @RestController
 public class PublicTableController {
 
@@ -23,10 +19,8 @@ public class PublicTableController {
         this.tableRepository = tableRepository;
     }
 
-    /**
-     * GET /tables
-     * Returns all tables, including occupied ones.
-     */
+    // EN: Returns all tables, including occupied ones, without API-prefix authentication flow.
+    // EE: Tagastab kõik lauad (sh hõivatud) ilma API-prefiksi autentimisvoota.
     @GetMapping("/tables")
     public List<Table> getTables() {
         return tableRepository.findAll();

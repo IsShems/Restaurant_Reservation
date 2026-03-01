@@ -1,9 +1,7 @@
 package com.restaurantbooking.restaurant_booking.model;
 
-/**
- * Preference enum representing guest preferences for tables.
- * Used in Reservation.preferences ElementCollection.
- */
+// EN: Enumerates guest seating preferences used by search and recommendation flows.
+// EE: Loetleb külaliste istekoha eelistused, mida kasutavad otsingu- ja soovitusvood.
 public enum Preference {
     PRIVATE_CORNER,   // Guest prefers a private/secluded corner
     NEAR_WINDOW,      // Guest prefers a table near a window

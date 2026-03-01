@@ -5,10 +5,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-/**
- * Zone entity representing different areas of the restaurant.
- * Example zones: main dining, patio, balcony, private room, etc.
- */
+// EN: JPA entity representing a logical restaurant area used for table grouping and filtering.
+// EE: JPA olem, mis kirjeldab loogilist restorani ala laudade grupeerimiseks ja filtreerimiseks.
 @Entity
 public class Zone {
 

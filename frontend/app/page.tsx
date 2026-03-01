@@ -7,7 +7,8 @@ import type { FilterState } from "./components/FilterForm";
 import Legend from "./components/Legend";
 import Toast, { Toast as ToastType } from "./components/Toast";
 
-// Disable SSR for FilterForm to prevent hydration errors with date/time inputs
+// EN: Disable SSR for form widgets that depend on browser-only date/time behavior.
+// EE: Keela SSR vormikomponentidele, mis sõltuvad brauseripõhisest kuupäeva/kellaaja käitumisest.
 const FilterForm = dynamic(() => import("./components/FilterFormWrapper"), {
   ssr: false,
 });
@@ -141,6 +142,8 @@ const matchesPreference = (table: Table, preference: string) => {
 };
 
 export default function Home() {
+  // EN: Main booking page state for table search, recommendation, and reservation actions.
+  // EE: Peamine broneerimisvaate olek laudade otsingu, soovituse ja broneerimistoimingute jaoks.
   const [allTables, setAllTables] = useState<Table[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -271,17 +274,21 @@ export default function Home() {
     return () => window.removeEventListener("storage", onLayoutSaved);
   }, [fetchAllTables, addToast]);
 
+  // EN: Fetches available tables for filters, ranks candidates, and updates UI recommendation state.
+  // EE: Toob filtrite põhjal saadaolevad lauad, järjestab kandidaadid ja uuendab UI soovituse olekut.
   const fetchAvailableTables = useCallback(
     async (filters: FilterState) => {
       setIsLoading(true);
 
       try {
-        // Calculate end time (2 hours after start time)
+        // EN: Normalize request to a fixed 2-hour booking window.
+        // EE: Normaliseeri päring fikseeritud 2-tunniseks broneeringuaknaks.
         const [hours] = filters.time.split(":");
         const endHour = (parseInt(hours, 10) + 2) % 24;
         const endTime = `${endHour.toString().padStart(2, "0")}:00`;
 
-        // Build query string
+        // EN: Build backend search query parameters from current filters.
+        // EE: Koosta backendi otsingu parameetrid aktiivsetest filtritest.
         const params = new URLSearchParams({
           date: filters.date,
           startTime: filters.time,
@@ -381,10 +388,14 @@ export default function Home() {
           return inSameZone(a, b) && (idNear || distNear);
         };
 
+        // EN: Attempts grouped-table recommendation when one table cannot satisfy constraints.
+        // EE: Proovib mitme laua soovitust, kui üks laud ei rahulda piiranguid.
         const findRecommendedGroup = (): Table[] | null => {
           const pool = availableTables.filter((t) => zoneMatches(t));
           let best: Table[] | null = null;
 
+          // EN: Evaluates a candidate group by capacity waste, group size, and preference score.
+          // EE: Hindab kandidaatrühma mahujäägi, rühma suuruse ja eelistusskoori järgi.
           const trySet = (group: Table[]) => {
             const capacity = group.reduce((sum, t) => sum + t.capacity, 0);
             if (capacity < filters.guests) return;
@@ -563,6 +574,8 @@ export default function Home() {
     });
   };
 
+  // EN: Submits reservation(s) for selected table IDs and applies post-booking UI updates.
+  // EE: Saadab valitud laua ID-de broneeringud ning rakendab broneerimisjärgsed UI uuendused.
   const handleReserve = async () => {
     if (selectedTableIds.length === 0 || !currentFilters) {
       addToast("error", "Please select a table first");

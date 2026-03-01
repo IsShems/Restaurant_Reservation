@@ -14,9 +14,8 @@ import com.restaurantbooking.restaurant_booking.model.Preference;
 import com.restaurantbooking.restaurant_booking.repository.TableRepository;
 import com.restaurantbooking.restaurant_booking.repository.ZoneRepository;
 
-/**
- * Service layer that encapsulates business logic around restaurant tables and zones.
- */
+// EN: Encapsulates table availability and zone-based retrieval rules.
+// EE: Koondab laudade saadavuse ja tsoonipõhise päringu reeglid.
 @Service
 public class TableService {
 
@@ -31,16 +30,15 @@ public class TableService {
         this.zoneRepository = zoneRepository;
     }
 
-    /**
-     * Returns all available (not occupied) tables.
-     * Optionally filters by zone name if provided.
-     */
+    // EN: Returns currently unoccupied tables, optionally filtered by zone name.
+    // EE: Tagastab hetkel hõivamata lauad, vajadusel tsooninime järgi filtreeritult.
     public List<Table> getAvailableTables(String zoneName) {
         if (zoneName == null || zoneName.isBlank()) {
             return tableRepository.findByOccupiedFalse();
         }
 
-        // Look up zone by name
+        // EN: Resolve the zone first to avoid querying with an invalid zone key.
+        // EE: Lahenda tsoon esmalt, et vältida päringut vigase tsoonivõtmega.
         Zone zone = zoneRepository.findByName(zoneName);
         if (zone == null) {
             return List.of(); // No such zone
@@ -49,17 +47,18 @@ public class TableService {
         return tableRepository.findByZoneIdAndOccupiedFalse(zone.getId());
     }
 
-    /**
-     * Get available tables with time-based filtering.
-     * Filters by: zone and time availability.
-     * Capacity suitability is handled at recommendation/selection stage, not availability.
-     */
+    // EN: Returns tables available for a time slot with optional zone filtering.
+    // EE: Tagastab ajavahemikus saadaval olevad lauad koos valikulise tsoonifiltriga.
+    // EN: guestCount/preferences are accepted for API consistency but not applied here.
+    // EE: guestCount/preferences võetakse vastu API ühtsuse nimel, kuid siin neid ei rakendata.
     public List<Table> getAvailableTables(LocalDateTime startTime, LocalDateTime endTime,
                                          Integer guestCount, String zoneName, 
                                          Set<Preference> preferences) {
         List<Table> allTables = tableRepository.findAll();
 
         return allTables.stream()
+            // EN: Keep predicate order deterministic: zone check first, then expensive reservation check.
+            // EE: Hoia tingimuste järjekord kindel: esmalt tsoon, seejärel kulukam broneeringu kontroll.
             .filter(table -> zoneName == null || zoneName.isBlank() || 
                            (table.getZone() != null && 
                             table.getZone().getName().equalsIgnoreCase(zoneName))) // Match zone
@@ -67,16 +66,14 @@ public class TableService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * Get all tables in a specific zone (occupied or not).
-     */
+    // EN: Returns all tables in a zone, regardless of occupancy.
+    // EE: Tagastab kõik tsooni lauad sõltumata hõivatusest.
     public List<Table> getTablesByZone(Long zoneId) {
         return tableRepository.findByZoneId(zoneId);
     }
 
-    /**
-     * Get all tables in a zone by zone name.
-     */
+    // EN: Returns all tables by zone name.
+    // EE: Tagastab kõik lauad tsooninime alusel.
     public List<Table> getTablesByZoneName(String zoneName) {
         return tableRepository.findByZoneName(zoneName);
     }

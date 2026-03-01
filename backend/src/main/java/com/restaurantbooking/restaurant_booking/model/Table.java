@@ -13,10 +13,8 @@ import jakarta.persistence.EnumType;
 import java.util.Set;
 import java.util.HashSet;
 
-/**
- * JPA entity representing a restaurant table.
- * Uses Jakarta Persistence annotations so it works with Spring Boot 4.
- */
+// EN: JPA entity representing a physical restaurant table and its floor-plan metadata.
+// EE: JPA olem, mis kirjeldab füüsilist restorani lauda ja selle põhiplaani metaandmeid.
 @Entity
 @jakarta.persistence.Table(name = "restaurant_table")
 public class Table {

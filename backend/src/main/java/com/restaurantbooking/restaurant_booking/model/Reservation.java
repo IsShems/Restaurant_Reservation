@@ -14,9 +14,8 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.HashSet;
 
-/**
- * Reservation entity representing a table reservation by guests.
- */
+// EN: JPA entity for a guest reservation tied to one table and a time range.
+// EE: JPA olem külalise broneeringu jaoks, mis on seotud ühe laua ja ajavahemikuga.
 @Entity
 public class Reservation {
 

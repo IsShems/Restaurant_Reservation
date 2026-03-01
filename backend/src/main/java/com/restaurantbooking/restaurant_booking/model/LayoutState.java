@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 @Entity
+// EN: Persists global UI-layout flags shared between admin and user experiences.
+// EE: Salvestab globaalsed UI paigutuse lipud, mida jagavad admini- ja kasutajavaated.
 public class LayoutState {
 
     @Id

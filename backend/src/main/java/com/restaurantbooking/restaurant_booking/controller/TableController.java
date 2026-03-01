@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.restaurantbooking.restaurant_booking.model.Table;
 import com.restaurantbooking.restaurant_booking.service.TableService;
 
-/**
- * REST controller exposing table-related endpoints.
- */
+// EN: Provides API endpoints for table availability queries.
+// EE: Pakub API otspunkte laudade saadavuse päringuteks.
 @RestController
 @RequestMapping("/api/tables")
 public class TableController {
@@ -23,10 +22,8 @@ public class TableController {
         this.tableService = tableService;
     }
 
-    /**
-     * GET /api/tables/available
-     * Returns all available tables. Optional query parameter `zone` filters results.
-     */
+    // EN: Returns available tables, optionally narrowed by zone.
+    // EE: Tagastab vabad lauad, vajadusel tsooni järgi kitsendatult.
     @GetMapping("/available")
     public List<Table> getAvailableTables(@RequestParam(name = "zone", required = false) String zone) {
         return tableService.getAvailableTables(zone);
