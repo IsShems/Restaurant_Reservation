@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Bean;
 
 import com.restaurantbooking.restaurant_booking.model.Table;
 import com.restaurantbooking.restaurant_booking.model.Zone;
+import com.restaurantbooking.restaurant_booking.model.LayoutState;
 import com.restaurantbooking.restaurant_booking.model.Feature;
 import com.restaurantbooking.restaurant_booking.repository.TableRepository;
 import com.restaurantbooking.restaurant_booking.repository.ZoneRepository;
+import com.restaurantbooking.restaurant_booking.repository.LayoutStateRepository;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,10 +31,14 @@ public class RestaurantBookingApplication {
 	 * with realistic restaurant layout data for testing.
 	 */
 	@Bean
-	public CommandLineRunner seedData(ZoneRepository zoneRepository, TableRepository tableRepository) {
+	public CommandLineRunner seedData(ZoneRepository zoneRepository, TableRepository tableRepository, LayoutStateRepository layoutStateRepository) {
 		return args -> {
-			tableRepository.deleteAll();
-			zoneRepository.deleteAll();
+			if (tableRepository.count() > 0 || zoneRepository.count() > 0) {
+				if (layoutStateRepository.findById(1L).isEmpty()) {
+					layoutStateRepository.save(new LayoutState(1L, false));
+				}
+				return;
+			}
 
 			// Create zones
 			Zone mainZone = zoneRepository.save(new Zone("MAIN_HALL"));
@@ -128,6 +134,8 @@ public class RestaurantBookingApplication {
 			table10.setNearKidsZone(false);
 			table10.setQuietCorner(false);
 			tableRepository.save(table10);
+
+			layoutStateRepository.save(new LayoutState(1L, false));
 		};
 	}
 
