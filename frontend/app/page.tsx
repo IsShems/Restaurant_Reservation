@@ -4,12 +4,15 @@ import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import type { FilterState } from "./components/FilterForm";
-import FloorPlan from "./components/FloorPlan";
 import Legend from "./components/Legend";
 import Toast, { Toast as ToastType } from "./components/Toast";
 
 // Disable SSR for FilterForm to prevent hydration errors with date/time inputs
 const FilterForm = dynamic(() => import("./components/FilterFormWrapper"), {
+  ssr: false,
+});
+
+const FloorPlan = dynamic(() => import("./components/FloorPlan"), {
   ssr: false,
 });
 
