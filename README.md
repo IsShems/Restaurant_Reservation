@@ -114,7 +114,7 @@ Recommended tables:
 * Appear visually prioritized
 
 Not Suitable and Occupied tables remain visible but dimmed.
-![Recommendations and status](./screenshots/recommendation-status.png)
+![Recommendations and status](./screenshots/occupied.png)
 
 ---
 
@@ -179,7 +179,7 @@ Below is the search result view showing:
 - Zone separation
 - Table status panel
 
-![Search Result](./screenshots/occupied.png)
+![Search Result](./screenshots/recommendation-status.png)
 
 ---
 
