@@ -114,6 +114,7 @@ Recommended tables:
 * Appear visually prioritized
 
 Not Suitable and Occupied tables remain visible but dimmed.
+(near window checked in filter)
 ![Recommendations and status](./screenshots/occupied.png)
 
 ---
