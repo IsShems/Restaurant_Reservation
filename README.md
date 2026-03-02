@@ -13,9 +13,12 @@ This is a full-stack restaurant reservation system.
 
 **Backend**: Spring Boot REST API, JPA/Hibernate, H2 in-memory database
 
+
 **Frontend**: Next.js 14 + React + TypeScript UI + Tailwind CSS + Framer Motion animatsioonid
 
 **Frontend**: Next.js 14 + React + TypeScript UI + Tailwind CSS + Framer Motion animations
+
+---
 
 **Peamised funktsioonid / Main Features:**
 
@@ -163,7 +166,7 @@ Soovitatud lauad on eredamad ja esiletõstetud / Recommended tables are brighter
 * Näide: 4 inimest terrassil → kaks 2-kohalist lauda / Example: 4 guests on terrace → two 2-seat tables
 * Tsooni vahetus tühistab valiku / Changing zone clears previous selection
 
-![Combined Tables](./screenshots/combined-tables.png)
+![Combined Tables](./screenshots/combined-tables.png.png)
 
 ---
 
@@ -193,9 +196,9 @@ Soovitatud lauad on eredamad ja esiletõstetud / Recommended tables are brighter
 * Broneeringute haldus: tänased, viimase 7 päeva, tulevased / Reservation management: today, last 7 days, future
 * Broneeringute kustutamine / Reservation deletion
 
-![Admin Login](./screenshots/admin-login.png)
-![Admin Dashboard](./screenshots/admin-dashboard.png)
-![Admin Reservation Side](./screenshots/admin-reservations.png)
+![Admin Login](./screenshots/admin-login.png.png)
+![Admin Dashboard](./screenshots/admin-dashboard.png.png)
+![Admin Reservation Side](./screenshots/admin-reservations.png.png)
 
 ---
 
