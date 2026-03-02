@@ -72,6 +72,8 @@ To reflect realistic restaurant logic:
 
 This avoids contradictory seating logic and improves recommendation quality.
 
+![Search Result](./docs/Screenshot%202026-03-02%20113030.png)
+
 ---
 
 ## 3.2 Recommendation & Scoring System
@@ -94,6 +96,8 @@ Example:
 
 * 1-3 guests will not be assigned an 8-10-seat table if a 2-seat table exists.
 
+  ![Guest reservation restriction](./docs/Screenshot%202026-03-02%20113034.png)
+
 ### Visual Recommendation System
 
 Tables are displayed with different visual states:
@@ -110,6 +114,7 @@ Recommended tables:
 * Appear visually prioritized
 
 Not Suitable and Occupied tables remain visible but dimmed.
+![Recommendations and status](./docs/Screenshot%202026-03-02%20113055.png)
 
 ---
 
@@ -122,6 +127,12 @@ If no single table matches a larger group:
 * Changing zone clears previous selection.
 
 This implements the dynamic merging requirement from the assignment.
+
+### Successful Combined Reservation Example
+
+Reservation of two 2-seat tables on the terrace for 4 guests.
+
+![Combined Tables](./docs/Screenshot%202026-03-02%20113306.png)
 
 ---
 
@@ -157,6 +168,18 @@ Additional UI features:
 * Real-time availability counter:
 
   > "Showing 8 of 10 tables available"
+  
+### User Search & Visual Interface
+
+Below is the search result view showing:
+
+- Available tables
+- Occupied tables
+- Recommended tables
+- Zone separation
+- Table status panel
+
+![Search Result](./docs/Screenshot%202026-03-02%20113028.png)
 
 ---
 
@@ -176,6 +199,20 @@ Simplified admin system includes:
 
 Note: Layout resets on full reload due to in-memory storage (evaluation scope).
 
+![Admin Login](./docs/Screenshot%202026-03-02%20113345.png)
+
+![Admin Dashboard](./docs/Screenshot%202026-03-02%20113403.png)
+
+![Admin Reservation Side](./docs/Screenshot%202026-03-02%20113423.png)
+
+### Drag-and-Drop Table Editing
+
+After repositioning tables:
+
+![Layout After Admin Side](./docs/Screenshot%202026-03-02%20113537.png)
+
+![Layout After User Side](./docs/Screenshot%202026-03-02%20113550.png)
+
 ---
 
 ## 3.7 External API Integration
@@ -188,6 +225,12 @@ On reservation confirmation:
 * Different meals may appear per request.
 
 This feature extends beyond the base assignment requirements.
+
+### Daily Meal Suggestion (TheMealDB Integration)
+
+Example of meal suggestion displayed after reservation:
+
+![Meal Suggestion](./docs/Screenshot%202026-03-02%20113315.png)
 
 ## 4 How to Launch (Evaluator-Friendly)
 
