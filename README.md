@@ -114,7 +114,7 @@ Recommended tables:
 * Appear visually prioritized
 
 Not Suitable and Occupied tables remain visible but dimmed.
-![Recommendations and status](./screenshots/recommendations-status.png)
+![Recommendations and status](./screenshots/recommendation-status.png)
 
 ---
 
@@ -132,7 +132,7 @@ This implements the dynamic merging requirement from the assignment.
 
 Reservation of two 2-seat tables on the terrace for 4 guests.
 
-![Combined Tables](./screenshots/combined-tables.png)
+![Combined Tables](./screenshots/combined-tables.png.png)
 
 ---
 
@@ -199,11 +199,11 @@ Simplified admin system includes:
 
 Note: Layout resets on full reload due to in-memory storage (evaluation scope).
 
-![Admin Login](./screenshots/admin-login.png)
+![Admin Login](./screenshots/admin-login.png.png)
 
-![Admin Dashboard](./screenshots/admin-dashboard.png)
+![Admin Dashboard](./screenshots/admin-dashboard.png.png)
 
-![Admin Reservation Side](./screenshots/admin-reservations.png)
+![Admin Reservation Side](./screenshots/admin-reservations.png.png)
 
 ### Drag-and-Drop Table Editing
 
