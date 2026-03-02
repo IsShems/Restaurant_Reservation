@@ -22,12 +22,6 @@ export default function TableCard({
   isRecommended = false,
   onReserve,
 }: TableCardProps) {
-  const featureIcons: Record<string, string> = {
-    WINDOW: "🪟",
-    PRIVATE_AREA: "🔒",
-    KIDS_ZONE: "👶",
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -103,7 +97,6 @@ export default function TableCard({
                 whileHover={{ scale: 1.1 }}
                 className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-dark-bg border border-dark-border/50 text-xs text-gray-300"
               >
-                <span>{featureIcons[feature] || "✨"}</span>
                 {feature.replace(/_/g, " ")}
               </motion.span>
             ))}

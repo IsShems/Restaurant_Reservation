@@ -18,9 +18,9 @@ export interface FilterState {
 
 const zones = ["Main Hall", "Patio", "Terrace", "Private Room"];
 const preferenceOptions = [
-  { id: "window", label: "Near Window", icon: "🪟" },
-  { id: "private", label: "Quiet Corner", icon: "🔒" },
-  { id: "kids", label: "Near Kids Zone", icon: "👶" },
+  { id: "window", label: "Near Window" },
+  { id: "private", label: "Quiet Corner" },
+  { id: "kids", label: "Near Kids Zone" },
 ];
 
 export default function FilterForm({ onFilter, isLoading }: FilterFormProps) {
@@ -173,7 +173,7 @@ export default function FilterForm({ onFilter, isLoading }: FilterFormProps) {
               Preferences
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {preferenceOptions.map(({ id, label, icon }) => (
+              {preferenceOptions.map(({ id, label }) => (
                 <motion.label
                   key={id}
                   whileHover={{ scale: 1.05 }}
@@ -185,10 +185,7 @@ export default function FilterForm({ onFilter, isLoading }: FilterFormProps) {
                     onChange={() => handlePreferenceToggle(id)}
                     className="w-4 h-4 rounded accent-purple-accent"
                   />
-                  <span className="ml-3 text-sm">
-                    <span className="mr-2">{icon}</span>
-                    {label}
-                  </span>
+                  <span className="ml-3 text-sm">{label}</span>
                 </motion.label>
               ))}
             </div>
