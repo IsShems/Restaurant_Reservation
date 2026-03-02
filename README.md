@@ -96,7 +96,7 @@ Example:
 
 * 1-3 guests will not be assigned an 8-10-seat table if a 2-seat table exists.
 
-  ![Guest reservation restriction](./docs/Screenshot%202026-03-02%20113034.png)
+  ![Guest reservation restriction](./screenshots/guest-limit-error.png)
 
 ### Visual Recommendation System
 
@@ -114,7 +114,7 @@ Recommended tables:
 * Appear visually prioritized
 
 Not Suitable and Occupied tables remain visible but dimmed.
-![Recommendations and status](./docs/Screenshot%202026-03-02%20113055.png)
+![Recommendations and status](./screenshots/recommendations-status.png)
 
 ---
 
@@ -132,7 +132,7 @@ This implements the dynamic merging requirement from the assignment.
 
 Reservation of two 2-seat tables on the terrace for 4 guests.
 
-![Combined Tables](./docs/Screenshot%202026-03-02%20113306.png)
+![Combined Tables](./screenshots/combined-tables.png)
 
 ---
 
@@ -179,7 +179,7 @@ Below is the search result view showing:
 - Zone separation
 - Table status panel
 
-![Search Result](./docs/Screenshot%202026-03-02%20113028.png)
+![Search Result](./screenshots/occupied.png)
 
 ---
 
@@ -199,19 +199,19 @@ Simplified admin system includes:
 
 Note: Layout resets on full reload due to in-memory storage (evaluation scope).
 
-![Admin Login](./docs/Screenshot%202026-03-02%20113345.png)
+![Admin Login](./screenshots/admin-login.png)
 
-![Admin Dashboard](./docs/Screenshot%202026-03-02%20113403.png)
+![Admin Dashboard](./screenshots/admin-dashboard.png)
 
-![Admin Reservation Side](./docs/Screenshot%202026-03-02%20113423.png)
+![Admin Reservation Side](./screenshots/admin-reservations.png)
 
 ### Drag-and-Drop Table Editing
 
 After repositioning tables:
 
-![Layout After Admin Side](./docs/Screenshot%202026-03-02%20113537.png)
+![Layout After Admin Side](./screenshots/layout-drag2.png)
 
-![Layout After User Side](./docs/Screenshot%202026-03-02%20113550.png)
+![Layout After User Side](./screenshots/layout-drag1.png)
 
 ---
 
@@ -230,7 +230,7 @@ This feature extends beyond the base assignment requirements.
 
 Example of meal suggestion displayed after reservation:
 
-![Meal Suggestion](./docs/Screenshot%202026-03-02%20113315.png)
+![Meal Suggestion](./screenshots/meal-suggestion.png)
 
 ## 4 How to Launch (Evaluator-Friendly)
 
