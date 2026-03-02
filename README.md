@@ -1,49 +1,64 @@
 # Nutikas Restorani Reserveerimissüsteem / Smart Restaurant Reservation System
 
+
 ## 1 Projekti kokkuvõte / Project Summary
 
+
+
 See on täisstack restoranide broneerimissüsteem.
+
 This is a full-stack restaurant reservation system.
 
 **Backend**: Spring Boot REST API, JPA/Hibernate, H2 in-memory andmebaas
+
 **Backend**: Spring Boot REST API, JPA/Hibernate, H2 in-memory database
 
 **Frontend**: Next.js 14 + React + TypeScript UI + Tailwind CSS + Framer Motion animatsioonid
+
 **Frontend**: Next.js 14 + React + TypeScript UI + Tailwind CSS + Framer Motion animations
 
 **Peamised funktsioonid / Main Features:**
 
+
 * Laudade saadavuse otsing kuupäeva/kellaaja/inimeste arvu/tsooni/eelistuste järgi
-  Table availability search by date/time/guest count/zone/preferences
+* Table availability search by date/time/guest count/zone/preferences
+  
 * Intelligente soovitus- ja skoorimissüsteem laudadele
-  Intelligent table recommendation & scoring system
+* Intelligent table recommendation & scoring system
+  
 * Dünaamiline laudade liitmine suurematele seltskondadele
-  Dynamic table combination for larger groups
+* Dynamic table combination for larger groups
+  
 * Broneeringu loomise voog
-  Reservation creation flow
+* Reservation creation flow
+  
 * Admini autentimine ja parooli muutmine
-  Admin authentication & password change
+* Admin authentication & password change
+  
 * Admini saaliplaani redigeerimine
-  Admin floor-plan layout editing
+* Admin floor-plan layout editing
+  
 * Broneeringute haldusarmatuurlaud
-  Reservation management dashboard
+* Reservation management dashboard
+  
 * Automaatne broneeringute aegumine
-  Automatic reservation expiration logic
+* Automatic reservation expiration logic
+  
 * Välise API integratsioon (TheMealDB päevaprae soovitus)
-  External API integration (TheMealDB meal suggestion)
+* External API integration (TheMealDB meal suggestion)
 
 **Tarkvara kvaliteet ja infrastruktuur / Infrastructure & Quality:**
 
 * Backend API testimine (unit- ja integratsioonitestid)
-  Backend API testing (unit & integration tests)
+* Backend API testing (unit & integration tests)
 * Backend Docker-konteiner (ainult backend teenus)
-  Backend Docker containerization (backend only)
+* Backend Docker containerization (backend only)
 * Osaline keskkonnapõhine konfiguratsioon (.env)
-  Partial environment-based configuration (.env support)
+* Partial environment-based configuration (.env support)
 * Täisstack Docker orchestration puudub (frontend + backend + DB)
-  No full-stack Docker orchestration
+* No full-stack Docker orchestration
 * Ei ole tootmisvalmis konteineriseeritud lahendus (hindamise kontekst)
-  Not production-ready containerized deployment (evaluation scope)
+* Not production-ready containerized deployment (evaluation scope)
 
 ---
 
