@@ -72,7 +72,7 @@ To reflect realistic restaurant logic:
 
 This avoids contradictory seating logic and improves recommendation quality.
 
-![Search Result](./screenshots/search-result.png)
+![Search Result](./screenshots/filter-search.png)
 
 ---
 
