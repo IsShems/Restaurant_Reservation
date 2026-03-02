@@ -4,7 +4,7 @@
 
 This is a full-stack restaurant reservation system.
 
-**Backend**: Spring Boot REST API, JPA/Hibernate, H2 in-memory database, Dockerized database
+**Backend**: Spring Boot REST API, JPA/Hibernate, H2 in-memory database
 
 **Frontend**: Next.js 14 + React + TypeScript UI + Tailwind CSS + Framer Motion animations
 
@@ -22,9 +22,11 @@ This is a full-stack restaurant reservation system.
 Infrastructure & Quality:
 
 - Backend API testing (unit & integration tests for core reservation logic)
-- Backend Docker containerization
+- Backend Docker containerization (backend service only)
 - Partial environment-based configuration (.env support for backend)
-  
+- No full-stack Docker orchestration (frontend + backend + DB together)
+- Not production-ready containerized deployment (evaluation scope)
+
 ---
 
 ## 2 Tech Stack
@@ -65,9 +67,9 @@ Users can search for available tables by:
 
 ### Preferences Implemented (3)
 
-* Near window
-* Quiet corner
-* Near kid zone
+* Near Window
+* Quiet Corner
+* Near Kids Zone
 
 ### Preference Constraints
 
@@ -292,19 +294,7 @@ docker run --rm -p 8081:8081 restaurant-backend
 
 ---
 
-## 5 Quick Verification Checklist
-
-* [ ] Backend responds on `/tables` and `/api/search`
-* [ ] Frontend loads reservation page on 3001
-* [ ] Admin page loads and allows auth
-* [ ] Layout save works and persists state flag
-* [ ] Reservation create request succeeds from frontend
-* [ ] `mvn -DskipTests compile` succeeds
-* [ ] `npm run build` succeeds
-
----
-
-## 6 Difficulties / Notes
+## 5 Difficulties / Notes
 
 ### Next.js Dev Runtime Error
 
@@ -337,7 +327,7 @@ Stable workaround:
 
 ---
 
-## 7 Help / References
+## 6 Help / References
 
 * AI tools (GitHub Copilot / GPT-based workflow) were used for:
 
@@ -346,7 +336,7 @@ Stable workaround:
   * Debugging runtime issues
   * Refactoring suggestions
   * Boilerplate generation
-  * Documentation drafting
+  * Documentation drafting and grammar refinement
   * No long external sample-project snippets copied verbatim; external snippets marked in code comments
 
 However:
@@ -359,7 +349,7 @@ However:
   AI was used as a development assistant, not as a replacement for engineering decisions.
 ---
 
-## 8 Unresolved / Risk Areas
+## 7 Unresolved / Risk Areas
 
 * **Next.js chunk cache inconsistency** may reappear
   Suggested fix: one-command cleanup script, enforce single dev server
@@ -369,7 +359,7 @@ However:
 
 ---
 
-## 9 Assumptions
+## 8 Assumptions
 
 * Evaluator runs backend and frontend locally
 * Ports: 8081 (backend), 3001 (frontend)
@@ -378,7 +368,7 @@ However:
 
 ---
 
-## 10 Time Spent (Estimated)
+## 9 Time Spent (Estimated)
 
 | Task                                    |  Time   |
 | --------------------------------------- | ------  |
@@ -387,37 +377,16 @@ However:
 | Dockerization & run validation          | ~2h     |
 | Runtime debugging (Next.js chunk/cache) | ~4h     |
 | Bilingual code documentation            | ~1–2h   |
-| README Documentation:                   | ~4–5h   |
+| Project Documentation:                  | ~4–5h   |
 | **Total:** 35–45 hours                  |         |
 
 ---
 
-## 10 Development Process / Commit Practice
+## 10 Development Process 
 
-* Frequent commits recommended to show progress
-* Milestone commits exist for Docker support, bilingual comments, stabilization
-* Future: smaller scoped commits per feature/fix for traceability
-
-
-
-## 11 Suggested Evaluation Log Template
-
-**Environment:**
-OS: …
-Java/Maven/Node versions: …
-
-**Steps Executed:**
-Backend command(s): …
-Frontend command(s): …
-Docker command(s): …
-
-**Results:**
-
-* Which endpoints/pages opened successfully: …
-* What failed & exact error: …
-* Notes: …
-* Time spent: …
-* Workarounds used: …
-* Remaining issues / recommendations: …
+- Iterative feature-based development
+- Milestone commits for major architectural changes (Docker support, testing layer, UI stabilization)
+- Refactoring commits separated from feature commits when possible
+- Git used as primary version control with incremental validation
 
 ```
