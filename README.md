@@ -5,6 +5,7 @@
 This is a full-stack restaurant reservation system.
 
 **Backend**: Spring Boot REST API, JPA/Hibernate, H2 in-memory database, Dockerized database
+
 **Frontend**: Next.js 14 + React + TypeScript UI + Tailwind CSS + Framer Motion animations
 
 **Main Features Implemented:**
