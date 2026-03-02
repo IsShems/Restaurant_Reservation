@@ -19,6 +19,12 @@ This is a full-stack restaurant reservation system.
 - Automatic reservation expiration logic
 - External API integration (TheMealDB meal suggestion)
 
+Infrastructure & Quality:
+
+- Backend API testing (unit & integration tests for core reservation logic)
+- Backend Docker containerization
+- Partial environment-based configuration (.env support for backend)
+  
 ---
 
 ## 2 Tech Stack
