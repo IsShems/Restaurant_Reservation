@@ -33,10 +33,7 @@ export default function Legend() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
-        <span className="text-lg mr-2">📋</span>
-        Table Status
-      </h3>
+      <h3 className="text-sm font-semibold text-white mb-3">Table Status</h3>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {items.map((item, index) => (
