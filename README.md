@@ -5,7 +5,7 @@
 
 
 
-See on täisstack restoranide broneerimissüsteem.
+See on täisstack restoranide broneerimissüsteem. 
 
 This is a full-stack restaurant reservation system.
 
