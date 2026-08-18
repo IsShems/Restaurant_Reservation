@@ -26,7 +26,7 @@ type ReservationGroups = {
   upcoming: ReservationItem[];
 };
 
-const API_BASE = "http://localhost:8081/api/admin";
+const API_BASE = "/backend/api/admin";
 const CANVAS_WIDTH = 1060;
 const CANVAS_HEIGHT = 560;
 const TABLE_WIDTH = 120;
@@ -210,7 +210,7 @@ export default function AdminPage() {
         setIsAuthenticated(Boolean(data.authenticated));
       } catch {
         setIsAuthenticated(false);
-        setAuthError("Cannot reach backend on localhost:8081.");
+        setAuthError("Cannot reach the backend service.");
       } finally {
         clearTimeout(timeout);
         setIsCheckingSession(false);

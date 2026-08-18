@@ -206,7 +206,7 @@ export default function Home() {
 
   const fetchAllTables = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8081/tables");
+      const response = await fetch("/backend/tables");
       if (!response.ok) throw new Error("Failed to load floor plan tables");
       const data = await response.json();
       const list = Array.isArray(data) ? data : [];
@@ -297,7 +297,7 @@ export default function Home() {
         });
 
         const response = await fetch(
-          `http://localhost:8081/api/search?${params.toString()}`,
+          `/backend/api/search?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -644,7 +644,7 @@ export default function Home() {
           guestCount: currentFilters.guests,
         };
 
-        const response = await fetch("http://localhost:8081/api/reservations", {
+        const response = await fetch("/backend/api/reservations", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
